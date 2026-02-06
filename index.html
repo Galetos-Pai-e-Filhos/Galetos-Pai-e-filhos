@@ -1682,7 +1682,7 @@
   async function sendOrder() {
     // --- TRAVA DE LOJA FECHADA ---
     if (!appConfig.isOpenManually) {
-        alert("⛔ LOJA FECHADA!\n\nNo momento não estamos aceitando pedidos. Por favor, aguarde nosso horário de funcionamento.");
+        alert("🔒 LOJA FECHADA NO MOMENTO\n\nAgradecemos a preferência, mas agora não estamos a receber pedidos.\n\n🕒 Nossos Horários:\n🍗 Galetos: Sáb e Dom (09h às 15h)\n🥔 Batatas: Qua a Dom (18h às 22h)\n\nPor favor, volte em breve! 🧡");
         return; // Para a execução aqui
     }
     // -----------------------------
