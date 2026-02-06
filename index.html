@@ -52,7 +52,7 @@
         radial-gradient(circle at 100% 0%, rgba(255,193,7,0.06) 0%, transparent 40%),
         radial-gradient(circle at 0% 100%, rgba(255,193,7,0.03) 0%, transparent 40%);
       min-height: 100vh;
-      padding-bottom: 140px;
+      padding-bottom: 100px; /* Ajuste para o footer não ficar escondido pelo float cart */
       overflow-x: hidden;
     }
 
@@ -75,9 +75,23 @@
       100% { box-shadow: 0 0 0 0 rgba(37, 211, 102, 0); }
     }
 
-    @keyframes popIn {
-      0% { transform: scale(0.9); opacity: 0; }
-      100% { transform: scale(1); opacity: 1; }
+    @keyframes float {
+      0% { transform: translateY(0px) rotateY(-5deg); }
+      50% { transform: translateY(-10px) rotateY(-5deg); }
+      100% { transform: translateY(0px) rotateY(-5deg); }
+    }
+
+    /* Animação de Explosão de Emojis */
+    .emoji-particle {
+      position: fixed;
+      pointer-events: none;
+      font-size: 24px;
+      z-index: 9999;
+      animation: flyOut 1s forwards cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    }
+    @keyframes flyOut {
+      0% { transform: translate(0, 0) scale(0.5); opacity: 1; }
+      100% { transform: translate(var(--tx), var(--ty)) scale(1.5) rotate(var(--rot)); opacity: 0; }
     }
 
     /* --- TOPBAR --- */
@@ -201,9 +215,10 @@
       background: rgba(255,255,255,0.03);
       border: 1px solid rgba(255,255,255,0.08);
       box-shadow: 0 30px 60px -20px rgba(0,0,0,0.8);
-      transform: rotateY(-5deg); transition: transform 0.4s ease;
+      transform: translateY(0px) rotateY(-5deg); 
+      animation: float 6s ease-in-out infinite; /* Efeito Flutuante */
     }
-    .promo-frame:hover { transform: rotateY(0) scale(1.02); }
+    .promo-frame:hover { animation-play-state: paused; transform: rotateY(0) scale(1.02); }
     .promo-img { width: 100%; display: block; border-radius: 18px; }
     .promo-badge-float {
         position: absolute; top: -10px; right: -10px;
@@ -231,11 +246,18 @@
     .search-input::placeholder { color: rgba(255,255,255,0.3); }
     .search-icon { position: absolute; left: 18px; top: 50%; transform: translateY(-50%); color: var(--text-sec); opacity: 0.7; }
 
-    /* Categories */
-    .cat-scroll {
-      display: flex; gap: 10px; overflow-x: auto; padding-bottom: 10px;
-      scrollbar-width: none;
+    /* Categories - Sticky */
+    .cat-container {
+      position: sticky; top: 75px; z-index: 40; /* Sticky abaixo da topbar */
+      background: var(--bg); /* Fundo opaco para cobrir itens ao rolar */
+      margin: 0 -20px; padding: 10px 20px; /* Margem negativa para full-width */
+      border-bottom: 1px solid var(--border);
       animation: fadeInUp 0.8s ease-out 0.7s backwards;
+    }
+    .cat-scroll {
+      display: flex; gap: 10px; overflow-x: auto; 
+      padding-bottom: 5px; /* Ajuste visual */
+      scrollbar-width: none;
     }
     .cat-scroll::-webkit-scrollbar { display: none; }
     .cat-btn {
@@ -245,7 +267,7 @@
       transition: all 0.2s;
     }
     .cat-btn:hover { background: rgba(255,255,255,0.1); color: var(--text); }
-    .cat-btn.active { background: var(--text); color: #000; border-color: var(--text); }
+    .cat-btn.active { background: var(--text); color: #000; border-color: var(--text); transform: scale(1.05); }
 
     /* Grid */
     .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; }
@@ -276,6 +298,7 @@
     }
     .card-info { flex: 1; }
     .card-title { font-size: 16px; font-weight: 700; margin: 0 0 6px; color: var(--text); }
+    .card-rating { font-size: 11px; color: #fbbf24; margin-bottom: 4px; display: flex; align-items: center; gap: 4px; }
     .card-desc { 
       font-size: 13px; color: var(--text-sec); line-height: 1.4; 
       display: -webkit-box; -webkit-line-clamp: 2; line-clamp: 2; 
@@ -328,6 +351,106 @@
       font-family: inherit; resize: vertical; min-height: 80px; transition: 0.2s;
     }
     textarea:focus { border-color: var(--brand); outline: none; background: #151515; }
+
+    /* Admin Styles Refined */
+    .admin-container { display: flex; flex-direction: column; gap: 16px; }
+    
+    .admin-card {
+      background: rgba(30, 30, 35, 0.6);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 16px;
+      padding: 20px;
+      position: relative;
+      overflow: hidden;
+    }
+    /* Indicador colorido na esquerda do card */
+    .admin-card::before {
+        content: ""; position: absolute; top: 0; left: 0; bottom: 0; width: 4px;
+        background: var(--brand); opacity: 0.7;
+    }
+
+    .admin-header-row {
+      display: flex; justify-content: space-between; align-items: center;
+      margin-bottom: 16px; padding-bottom: 12px;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+    }
+    
+    .admin-section-title {
+      font-size: 14px; font-weight: 700; color: #fff;
+      text-transform: uppercase; letter-spacing: 0.05em;
+      display: flex; align-items: center; gap: 8px;
+    }
+
+    /* Grid de Zonas */
+    .admin-zones-grid {
+        display: grid; grid-template-columns: 1fr 1fr; gap: 12px;
+    }
+    @media(max-width: 400px) { .admin-zones-grid { grid-template-columns: 1fr; } }
+
+    .zone-item {
+        background: rgba(0,0,0,0.3); border-radius: 10px; padding: 10px;
+        border: 1px solid rgba(255,255,255,0.05);
+    }
+    .zone-label { font-size: 11px; color: var(--text-sec); margin-bottom: 4px; display: block; font-weight: 600; }
+    
+    /* Grid de Estoque */
+    .stock-grid {
+        display: grid; grid-template-columns: 1fr; gap: 8px;
+        max-height: 300px; overflow-y: auto; padding-right: 5px;
+    }
+    /* Scrollbar fina para o estoque */
+    .stock-grid::-webkit-scrollbar { width: 4px; }
+    .stock-grid::-webkit-scrollbar-thumb { background: #333; border-radius: 4px; }
+
+    .stock-item {
+        display: flex; justify-content: space-between; align-items: center;
+        padding: 12px 14px; background: rgba(255,255,255,0.03);
+        border-radius: 10px; border: 1px solid transparent;
+        transition: 0.2s;
+    }
+    .stock-item:hover { background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.1); }
+    
+    /* Inputs Admin */
+    .admin-input-row { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+    .admin-label-sm { font-size: 12px; color: var(--text-sec); flex: 1; }
+    .admin-input-sm {
+        width: 70px; background: #0a0a0a; border: 1px solid var(--border);
+        color: #fff; padding: 8px; border-radius: 8px; text-align: center; font-weight: 600;
+    }
+
+    /* Toggle Switch Refinado */
+    .switch { position: relative; display: inline-block; width: 44px; height: 24px; flex-shrink: 0; }
+    .switch input { opacity: 0; width: 0; height: 0; }
+    .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #333; transition: .4s; border-radius: 34px; }
+    .slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 3px; bottom: 3px; background-color: #fff; transition: .4s; border-radius: 50%; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
+    input:checked + .slider { background-color: var(--success); } /* Verde para ligado */
+    input:checked + .slider:before { transform: translateX(20px); }
+
+    /* Toast (Movido para baixo e invisível por padrão) */
+    .success-msg {
+      position: fixed; 
+      bottom: 100px; /* Acima do carrinho flutuante */
+      left: 50%; 
+      transform: translateX(-50%) translateY(20px); /* Começa um pouco mais baixo */
+      opacity: 0; /* Invisível por padrão */
+      pointer-events: none; /* Não clica quando invisível */
+      
+      background: #10B981; 
+      color: #000; 
+      padding: 12px 24px; 
+      border-radius: 100px;
+      font-weight: 700; 
+      font-size: 14px; 
+      box-shadow: 0 10px 30px rgba(16, 185, 129, 0.3);
+      z-index: 300; 
+      transition: all 0.4s var(--ease);
+      display: flex; align-items: center; gap: 8px;
+    }
+    /* Quando ativo */
+    .success-msg.visible { 
+      transform: translateX(-50%) translateY(0); 
+      opacity: 1;
+    }
 
     /* Cart Float */
     .cart-float {
@@ -382,56 +505,29 @@
     .modal-input { width: 100%; background: #050505; border: 1px solid var(--border); padding: 14px; border-radius: 12px; color: #fff; font-size: 14px; transition: 0.2s; }
     .modal-input:focus { border-color: var(--brand); outline: none; }
 
-    /* Admin Styles */
-    .admin-section { margin-bottom: 24px; border-bottom: 1px dashed var(--border); padding-bottom: 20px; }
-    .admin-section:last-child { border-bottom: none; }
-    .admin-title { font-size: 13px; color: var(--brand); font-weight: 700; margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.05em; }
-    .admin-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
-    .switch-label { font-size: 14px; color: var(--text); }
-    
-    /* Toggle Switch */
-    .switch { position: relative; display: inline-block; width: 44px; height: 24px; }
-    .switch input { opacity: 0; width: 0; height: 0; }
-    .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #333; transition: .4s; border-radius: 34px; }
-    .slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; }
-    input:checked + .slider { background-color: var(--brand); }
-    input:checked + .slider:before { transform: translateX(20px); }
-
-    /* Toast */
-    .success-msg {
-      position: fixed; top: 24px; left: 50%; transform: translateX(-50%) translateY(-100px);
-      background: #10B981; color: #000; padding: 12px 24px; border-radius: 100px;
-      font-weight: 700; font-size: 14px; box-shadow: 0 10px 30px rgba(16, 185, 129, 0.3);
-      z-index: 300; transition: transform 0.4s var(--ease);
-      display: flex; align-items: center; gap: 8px;
-    }
-    .success-msg.visible { transform: translateX(-50%) translateY(0); }
-
-    /* MARCA D'ÁGUA FLUTUANTE */
-    .dev-watermark {
-      position: fixed;
-      bottom: 0;
-      left: 0;
-      width: 100%;
+    /* Footer Styles */
+    .site-footer {
+      border-top: 1px solid var(--border);
+      padding: 40px 20px 80px;
+      margin-top: 60px;
+      background: rgba(255,255,255,0.02);
       text-align: center;
-      padding: 10px 0 5px; /* Espaço para não colar na borda */
-      
-      /* Fundo degradê sutil para legibilidade sobre fotos/conteúdo */
-      background: linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0) 100%);
-      
-      color: rgba(255,255,255,0.4); /* Discreto */
-      font-size: 11px;
-      font-weight: 500;
-      letter-spacing: 1px;
-      text-transform: uppercase;
-      
-      z-index: 40; /* Fica acima do conteúdo, mas abaixo do carrinho (z-index 100) */
-      pointer-events: none; /* Permite clicar através dela */
     }
-    .dev-watermark strong { 
-      color: var(--brand); 
-      opacity: 0.8;
+    .footer-content {
+      max-width: 1000px; margin: 0 auto;
+      display: flex; flex-direction: column; gap: 20px; align-items: center;
     }
+    .footer-logo img { width: 50px; opacity: 0.8; }
+    .footer-info p { color: var(--text-sec); font-size: 13px; margin: 4px 0; }
+    .footer-info strong { color: var(--text); }
+    
+    .dev-watermark {
+      margin-top: 20px;
+      padding-top: 20px;
+      border-top: 1px dashed rgba(255,255,255,0.1);
+      color: rgba(255,255,255,0.3); font-size: 11px; font-weight: 500; letter-spacing: 1px; text-transform: uppercase;
+    }
+    .dev-watermark strong { color: var(--brand); opacity: 0.8; }
 
     /* Floating WhatsApp */
     .wa-float {
@@ -481,6 +577,8 @@
       .promo-frame { transform: none !important; margin: 0 auto; box-shadow: 0 15px 40px rgba(0,0,0,0.5); }
       .promo-frame:hover { transform: none; }
 
+      .cat-container { top: 70px; } /* Ajuste sticky mobile */
+
       .grid {
         grid-template-columns: 1fr; /* 1 Card por linha no mobile */
         gap: 16px;
@@ -529,11 +627,27 @@
         height: 28px;
       }
     }
+
+  /* Marca D'água Flutuante */
+  .watermark-float {
+    position: fixed;
+    bottom: 10px;
+    left: 14px;
+    z-index: 40; /* Baixo z-index para não bloquear interações */
+    font-size: 10px;
+    color: rgba(255, 255, 255, 0.2); /* Bem sutil */
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    pointer-events: none; /* Permite clicar através dela */
+    text-shadow: 0 1px 2px rgba(0,0,0,0.8);
+    font-family: 'Inter', sans-serif;
+  }
   </style>
 </head>
 <body>
 
-  <!-- Mensagem Toast -->
+  <!-- Mensagem Toast (Restaurada) -->
   <div id="toast" class="success-msg">
     <span>✅</span> Item adicionado!
   </div>
@@ -543,7 +657,8 @@
       <div class="brand">
         <!-- LOGO (Agora é o botão de acesso ao Admin) -->
         <div class="brand-icon" onclick="window.openAdmin()" title="Acesso Administrativo" style="cursor: pointer;">
-          <img src="logo.jpeg" alt="Logo Galeteria Pais e Filhos">
+          <!-- Placeholder logo if image fails -->
+          <img src="logo.jpeg" onerror="this.src='https://placehold.co/50x50/FFC107/000000?text=PF'" alt="Logo Galeteria Pais e Filhos">
         </div>
         <div class="brand-text">
           <h1>Galeteria Pais e Filhos</h1>
@@ -591,24 +706,26 @@
       <div class="hero-visual">
         <div class="promo-frame">
           <div class="promo-badge-float">OFERTA!</div>
-          <img src="PROMOÇOES.jpeg" alt="Promoção Batata Frita" class="promo-img">
+          <img src="PROMOÇOES.jpeg" onerror="this.src='https://placehold.co/320x400/222/eee?text=Foto+Promocao'" alt="Promoção Batata Frita" class="promo-img">
         </div>
       </div>
     </div>
 
     <div class="section-title" id="menu">Cardápio Completo</div>
 
-    <div class="search-wrapper">
-      <span class="search-icon">🔍</span>
-      <input type="text" class="search-input" id="searchInput" placeholder="O que você deseja comer hoje?" oninput="window.filterMenu()">
+    <div class="cat-container">
+      <div class="search-wrapper">
+        <span class="search-icon">🔍</span>
+        <input type="text" class="search-input" id="searchInput" placeholder="O que você deseja comer hoje?" oninput="window.filterMenu()">
+      </div>
+      <div class="cat-scroll" id="catScroll"></div>
     </div>
 
-    <div class="cat-scroll" id="catScroll"></div>
     <div class="grid" id="menuGrid" style="margin-top: 24px;"></div>
 
     <div class="extras-grid">
-      <div class="form-box">
-        <div class="form-title"><span>🍟</span> Adicionais</div>
+      <div class="form-box" id="extrasBox">
+        <div class="form-title"><span>🍴</span> Preferências</div>
         <div id="extrasList"></div>
       </div>
       <div class="form-box">
@@ -618,15 +735,31 @@
     </div>
   </div>
 
+  <!-- RODAPÉ -->
+  <footer class="site-footer">
+    <div class="footer-content">
+      <div class="footer-logo">
+        <img src="logo.jpeg" onerror="this.style.display='none'" alt="Logo" style="width: 60px; height: 60px; border-radius: 50%; opacity: 0.7; filter: grayscale(1);">
+      </div>
+      <div class="footer-info">
+        <p><strong>Galeteria Pais e Filhos</strong></p>
+        <p>O melhor sabor da região entregue na sua casa.</p>
+        <p style="margin-top: 10px;">📍 Atendemos Bairros Próximos e Centro</p>
+        <p>📞 (79) 98810-0417</p>
+      </div>
+      <div class="dev-watermark">
+        Desenvolvido por <strong>Ferreira Web Design</strong>
+      </div>
+    </div>
+  </footer>
+
   <!-- Botão Flutuante do WhatsApp -->
   <a href="https://api.whatsapp.com/message/7FGXL4XM42QXL1?autoload=1&app_absent=0&utm_source=ig&fbclid=PAVERFWAPuDqVleHRuA2FlbQExAHNydGMGYXBwX2lkDzEyNDAyNDU3NDI4NzQxNAABp8MsmdCmglIkg_LbSda7dRJqS0NV-zXyp3uoNQ7SsTCNk3_B59qMHxPSc2-j_aem_R5h8QPyU907Fseg_vmAx6Q" target="_blank" class="wa-float" aria-label="Fale conosco no WhatsApp">
     <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12.004 2c-5.514 0-10 4.486-10 10 0 1.83.496 3.567 1.373 5.09l-1.377 4.91 5.059-1.33c1.455.79 3.102 1.23 4.945 1.23 5.514 0 10-4.486 10-10s-4.486-10-10-10zm0 18.003c-1.63 0-3.125-.436-4.437-1.185l-.326-.186-2.89.76.78-2.81-.197-.332c-.84-1.423-1.33-3.08-1.33-4.85 0-4.41 3.59-8.003 8.004-8.003s8.004 3.593 8.004 8.003-3.59 8.003-8.004 8.003zm4.553-6.22c-.25-.125-1.485-.733-1.715-.817-.23-.083-.397-.125-.565.125-.168.25-.652.817-.8.984-.148.167-.298.188-.548.063-.25-.125-1.055-.39-2.01-1.24-.74-.66-1.24-1.472-1.387-1.722-.148-.25-.016-.386.11-.51.112-.112.25-.292.373-.438.125-.146.167-.25.25-.417.084-.167.042-.313-.02-.438-.063-.125-.565-1.363-.774-1.867-.203-.49-.41-.423-.565-.43-.148-.008-.317-.008-.485-.008-.168 0-.44.063-.672.313-.23.25-.882.862-.882 2.104 0 1.242.903 2.442 1.03 2.61.125.166 1.777 2.713 4.305 3.804 1.678.724 2.016.58 2.377.544.36-.037 1.148-.47 1.31-0.922.164-.452.164-.84.115-.922-.05-.084-.183-.125-.433-.25z"/></svg>
   </a>
 
-  <!-- MARCA D'ÁGUA (Sem o cadeado) -->
-  <div class="dev-watermark">
-    Desenvolvido por <strong>Ferreira Web Design</strong>
-  </div>
+  <!-- Marca D'água Flutuante -->
+  <div class="watermark-float">Ferreira Web Design</div>
 
   <!-- Cart Float -->
   <div class="cart-float" id="cartFloat">
@@ -671,11 +804,25 @@
         </div>
         <h4 style="margin: 24px 0 16px; font-size: 14px; text-transform: uppercase; color: var(--text-sec); letter-spacing: 0.05em; border-bottom: 1px solid var(--border); padding-bottom: 8px;">Seus Dados</h4>
         <div class="input-group"><label>Nome Completo</label><input type="text" id="clientName" class="modal-input" placeholder="Seu nome"></div>
-        <div class="input-group"><label>Telefone</label><input type="tel" id="clientPhone" class="modal-input" placeholder="(00) 00000-0000"></div>
+        <div class="input-group"><label>Telefone</label><input type="tel" id="clientPhone" class="modal-input" placeholder="(XX) 9XXXX-XXXX" maxlength="15"></div>
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
-          <div class="input-group"><label>Pagamento</label><select id="paymentMethod" class="modal-input"><option>Pix</option><option>Cartão</option><option>Dinheiro</option></select></div>
+          <div class="input-group"><label>Pagamento</label><select id="paymentMethod" class="modal-input"><option value="Pix">Pix</option><option value="Cartão">Cartão</option><option value="Dinheiro">Dinheiro</option></select></div>
           <div class="input-group" id="changeGroup" style="display:none;"><label>Troco para</label><input type="tel" id="changeInput" class="modal-input" placeholder="R$ 0,00"></div>
         </div>
+
+        <!-- Área PIX (Visível por padrão pois Pix é a primeira opção) -->
+        <div id="pixGroup" style="margin-top: -8px; margin-bottom: 16px; background: rgba(255,193,7,0.1); padding: 12px; border-radius: 12px; border: 1px dashed var(--brand);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                <span style="font-size: 11px; color: var(--brand); font-weight: 700; letter-spacing: 0.05em;">CHAVE PIX (CNPJ)</span>
+                <button onclick="window.copyPix()" style="background: var(--brand); border: none; border-radius: 6px; padding: 6px 12px; font-weight: 700; cursor: pointer; font-size: 11px; color: #000; box-shadow: 0 2px 5px rgba(0,0,0,0.2);">COPIAR</button>
+            </div>
+            <input type="text" value="63957418000101" readonly style="width:100%; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); color: #fff; font-family: monospace; font-size: 15px; padding: 10px; border-radius: 8px; text-align: center; margin-bottom: 8px; outline: none;" id="pixKeyInput" onclick="this.select();">
+            <div style="font-size: 11px; color: var(--text-sec); text-align: center; line-height: 1.4;">Titular: <strong style="color: #fff;">Ana Paula Eloy Santana Morais</strong></div>
+            <div style="margin-top: 10px; padding-top: 10px; border-top: 1px dashed rgba(255,255,255,0.1); font-size: 11px; color: #fbbf24; text-align: center;">
+                ⚠️ <strong>Importante:</strong> Envie o comprovante no WhatsApp ao finalizar o pedido.
+            </div>
+        </div>
+
         <div class="input-group"><label>Endereço</label><input type="text" id="clientAddress" class="modal-input" placeholder="Rua, Número, Bairro..."></div>
       </div>
       <div class="modal-footer">
@@ -704,19 +851,16 @@
   // FIREBASE IMPORTS
   import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
   import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-  import { getFirestore, doc, onSnapshot, setDoc, addDoc, collection } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+  import { getFirestore, doc, onSnapshot, setDoc, addDoc, collection, getDocs } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
   // --- FIREBASE SETUP ---
-  // Se estiver no ambiente de preview, usa as variáveis globais. 
-  // Se for para usar o SEU próprio Firebase, substitua o bloco 'firebaseConfig' abaixo com as suas chaves.
   let firebaseConfig;
-  let appId = 'galeteria-pais-filhos'; // ID padrão se não fornecido
+  let appId = 'galeteria-pais-filhos'; 
 
   if (typeof __firebase_config !== 'undefined') {
     firebaseConfig = JSON.parse(__firebase_config);
     if (typeof __app_id !== 'undefined') appId = __app_id;
   } else {
-    // --- COLOCAR SUA CONFIGURAÇÃO DO FIREBASE AQUI SE FOR HOSPEDAR FORA ---
     firebaseConfig = {
       apiKey: "AIzaSyCzekvqmEji0fqfXrhPIQFr-xELAU8EmTs",
       authDomain: "galeto-1dc17.firebaseapp.com",
@@ -725,10 +869,8 @@
       messagingSenderId: "777086839092",
       appId: "1:777086839092:web:042261c5ce1f152a4c9d61"
     };
-    // ---------------------------------------------------------------------
   }
 
-  // Inicializa Firebase se houver config
   let db, auth, user;
   
   if (firebaseConfig && firebaseConfig.apiKey !== "SUA_API_KEY") {
@@ -736,7 +878,6 @@
     auth = getAuth(app);
     db = getFirestore(app);
 
-    // Auth Logic
     const initAuth = async () => {
       if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
         await signInWithCustomToken(auth, __initial_auth_token);
@@ -750,7 +891,7 @@
       user = u;
       if (user) {
         console.log("Firebase Conectado. User:", user.uid);
-        subscribeToConfig(); // Começa a ouvir mudanças assim que logar
+        subscribeToConfig(); 
       }
     });
   } else {
@@ -759,12 +900,33 @@
   }
 
   // --- DADOS ---
-  const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzWSTWWzDULgIBeYLkA5NQakIdA9wsrTuZIIy_VDxETuYjGWcHm6cYd6uGPnf57uh9Y_g/exec"; 
+  const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyXPG30IQSfBWDxaHh_7m5Z_ZYnuFcoWNqzv-WqePbtBjSPQkh3Y5wyEgwOpcDbALkqkw/exec"; 
   const WHATSAPP = "5579988100417";
 
   let appConfig = {
     isOpenManually: true, 
-    fees: { retirada: 0, perto: 5, centro: 10 },
+    // fees: { retirada: 0, perto: 5, centro: 10 }, // REMOVIDO PARA USAR ZONAS
+    deliveryZones: [
+        { name: "Retirada", price: 0 },
+        { name: "Albano Franco", price: 2.00 },
+        { name: "Marcos Freire 1", price: 3.00 },
+        { name: "Marcos Freire 3", price: 3.00 },
+        { name: "Taiçoca de Dentro", price: 3.00 },
+        { name: "Maria do Carmo", price: 4.00 },
+        { name: "Novo Horizonte", price: 4.00 },
+        { name: "Marcos Freire 2", price: 4.00 },
+        { name: "Piabeta", price: 5.00 },
+        { name: "João Alves", price: 5.00 },
+        { name: "Porto D'antas", price: 5.00 },
+        { name: "Neuzice Barreto", price: 5.00 },
+        { name: "Taiçoca de Fora", price: 5.00 },
+        { name: "Fernando Collor", price: 6.00 },
+        { name: "Bairro Industrial", price: 6.00 },
+        { name: "Japãozinho", price: 7.00 },
+        { name: "Lamarão", price: 7.00 },
+        { name: "Cidade Nova", price: 8.00 },
+        { name: "Sede de Socorro", price: 10.00 }
+    ],
     hours: {
       galeto: { start: 9, end: 15 },
       batata: { start: 17, end: 21 }
@@ -794,18 +956,13 @@
     { id: 71, cat: "bebidas", name: "Coca-Cola 1L", desc: "Bem gelada", price: 8.00, img: "🥤" }
   ];
 
-  const extras = [
-    { id: "ex1", name: "Molho de Alho", price: 3.00 },
-    { id: "ex2", name: "Farofa Extra", price: 4.00 },
-    { id: "ex3", name: "Maionese Verde", price: 3.00 }
-  ];
+  const extras = [];
 
   let cart = {}; 
   let selectedExtras = new Set();
   let activeCat = "todos";
 
   // --- FUNÇÕES GLOBAIS (window) ---
-  // Necessário porque type="module" isola o escopo, mas o HTML chama onclick="..."
   window.openAdmin = openAdmin;
   window.closeAdmin = closeAdmin;
   window.checkAdminPassword = checkAdminPassword;
@@ -821,25 +978,135 @@
   window.updateTotals = updateTotals;
   window.scrollToMenu = scrollToMenu;
   window.sendOrder = sendOrder;
+  window.explodeEmojis = explodeEmojis;
+  window.copyPix = copyPix;
+
+  // --- FUNÇÃO PARA GERAR NÚMERO DO PEDIDO ---
+  async function getNextOrderNumber() {
+      // 1. Tenta pegar do Firebase
+      if (db && user) {
+          try {
+              const colRef = collection(db, 'artifacts', appId, 'public', 'data', 'orders');
+              const snapshot = await getDocs(colRef);
+              const count = snapshot.size + 1;
+              return count.toString().padStart(2, '0'); // Ex: "01", "02", "10"
+          } catch (e) {
+              console.error("Erro ao numerar pedido online:", e);
+          }
+      }
+      
+      // 2. Fallback Local (se offline ou erro)
+      let count = parseInt(localStorage.getItem('localOrderCount') || '0') + 1;
+      localStorage.setItem('localOrderCount', count);
+      return count.toString().padStart(2, '0');
+  }
+
+  // --- FUNÇÃO COPIAR PIX ---
+  function copyPix() {
+      const input = document.getElementById('pixKeyInput');
+      input.select();
+      input.setSelectionRange(0, 99999); // Para mobile
+      document.execCommand('copy');
+      
+      // Feedback visual
+      const originalText = document.querySelector('#pixGroup button').innerText;
+      document.querySelector('#pixGroup button').innerText = "COPIADO!";
+      setTimeout(() => {
+          document.querySelector('#pixGroup button').innerText = originalText;
+      }, 2000);
+      
+      // Usar o Toast existente
+      const t = document.getElementById('toast');
+      t.innerHTML = "<span>📋</span> Chave Pix copiada!";
+      t.classList.add('visible'); 
+      setTimeout(() => t.classList.remove('visible'), 2000);
+  }
+
+  // --- FUNÇÃO DE EXPLOSÃO DE EMOJIS ---
+  function explodeEmojis(x, y) {
+      // Se não houver coordenadas (ex: chamado programaticamente), usa o centro
+      if (!x || !y) {
+          x = window.innerWidth / 2;
+          y = window.innerHeight / 2;
+      }
+
+      const emojis = ['🍗', '🍟', '🥤', '😋', '🔥', '🧡', '✨', '🇧🇷'];
+      const count = 12; // Quantidade de emojis
+
+      for (let i = 0; i < count; i++) {
+        const el = document.createElement('div');
+        el.className = 'emoji-particle';
+        el.innerText = emojis[Math.floor(Math.random() * emojis.length)];
+        el.style.left = x + 'px';
+        el.style.top = y + 'px';
+        
+        // Direção aleatória
+        const angle = Math.random() * Math.PI * 2;
+        // Distância aleatória
+        const velocity = 60 + Math.random() * 80;
+        
+        const tx = Math.cos(angle) * velocity + 'px';
+        const ty = Math.sin(angle) * velocity + 'px';
+        const rot = (Math.random() * 360 - 180) + 'deg';
+
+        el.style.setProperty('--tx', tx);
+        el.style.setProperty('--ty', ty);
+        el.style.setProperty('--rot', rot);
+
+        document.body.appendChild(el);
+        
+        // Remove do DOM após a animação
+        setTimeout(() => el.remove(), 1000);
+      }
+  }
+
+  // --- MÁSCARA TELEFONE ---
+  const phoneInput = document.getElementById('clientPhone');
+  if(phoneInput) {
+    phoneInput.addEventListener('input', function (e) {
+      let x = e.target.value.replace(/\D/g, '').match(/(\d{0,2})(\d{0,5})(\d{0,4})/);
+      e.target.value = !x[2] ? x[1] : '(' + x[1] + ') ' + x[2] + (x[3] ? '-' + x[3] : '');
+    });
+  }
 
   // --- SINCRONIZAÇÃO DE DADOS ---
-  
-  // 1. Escutar Configurações (Realtime)
   function subscribeToConfig() {
     if (!db || !user) return;
-    // Caminho estrito conforme regras do sistema: coleção 'config', documento 'store_settings' (6 segmentos)
     const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'config', 'store_settings');
     
     onSnapshot(docRef, (docSnap) => {
       if (docSnap.exists()) {
         const remoteConfig = docSnap.data();
-        appConfig = { ...appConfig, ...remoteConfig }; // Merge
+        appConfig = { ...appConfig, ...remoteConfig }; 
+        // Backward compatibility check for deliveryZones
+        if(!appConfig.deliveryZones) {
+           appConfig.deliveryZones = [
+            { name: "Retirada", price: 0 },
+            { name: "Albano Franco", price: 2.00 },
+            { name: "Marcos Freire 1", price: 3.00 },
+            { name: "Marcos Freire 3", price: 3.00 },
+            { name: "Taiçoca de Dentro", price: 3.00 },
+            { name: "Maria do Carmo", price: 4.00 },
+            { name: "Novo Horizonte", price: 4.00 },
+            { name: "Marcos Freire 2", price: 4.00 },
+            { name: "Piabeta", price: 5.00 },
+            { name: "João Alves", price: 5.00 },
+            { name: "Porto D'antas", price: 5.00 },
+            { name: "Neuzice Barreto", price: 5.00 },
+            { name: "Taiçoca de Fora", price: 5.00 },
+            { name: "Fernando Collor", price: 6.00 },
+            { name: "Bairro Industrial", price: 6.00 },
+            { name: "Japãozinho", price: 7.00 },
+            { name: "Lamarão", price: 7.00 },
+            { name: "Cidade Nova", price: 8.00 },
+            { name: "Sede de Socorro", price: 10.00 }
+           ];
+        }
         console.log("Config atualizada do Firebase!");
         renderMenu();
         updateDeliveryOptions();
         checkOpenStatus();
       } else {
-        // Se não existir doc, cria um inicial
         saveConfigToFirebase();
       }
     }, (error) => {
@@ -847,16 +1114,12 @@
     });
   }
 
-  // 2. Salvar Configurações (Admin)
   async function saveConfigToFirebase() {
     if (!db || !user) {
-      // Fallback Local
       localStorage.setItem('galeteriaConfig', JSON.stringify(appConfig));
       return; 
     }
-    
     try {
-      // Caminho estrito: coleção 'config', documento 'store_settings'
       const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'config', 'store_settings');
       await setDoc(docRef, appConfig);
       console.log("Config salva no Firebase!");
@@ -866,7 +1129,6 @@
     }
   }
 
-  // 3. Salvar Pedido (Histórico)
   async function saveOrderToFirebase(orderData) {
     if (!db || !user) return;
     try {
@@ -881,14 +1143,36 @@
     }
   }
 
-  // Fallback para LocalStorage se Firebase falhar ou não existir
   function loadConfigLocal() {
     const saved = localStorage.getItem('galeteriaConfig');
     if (saved) {
       const parsed = JSON.parse(saved);
       appConfig = { ...appConfig, ...parsed };
+      // Local backward compatibility
+      if(!appConfig.deliveryZones) {
+          appConfig.deliveryZones = [
+            { name: "Retirada", price: 0 },
+            { name: "Albano Franco", price: 2.00 },
+            { name: "Marcos Freire 1", price: 3.00 },
+            { name: "Marcos Freire 3", price: 3.00 },
+            { name: "Taiçoca de Dentro", price: 3.00 },
+            { name: "Maria do Carmo", price: 4.00 },
+            { name: "Novo Horizonte", price: 4.00 },
+            { name: "Marcos Freire 2", price: 4.00 },
+            { name: "Piabeta", price: 5.00 },
+            { name: "João Alves", price: 5.00 },
+            { name: "Porto D'antas", price: 5.00 },
+            { name: "Neuzice Barreto", price: 5.00 },
+            { name: "Taiçoca de Fora", price: 5.00 },
+            { name: "Fernando Collor", price: 6.00 },
+            { name: "Bairro Industrial", price: 6.00 },
+            { name: "Japãozinho", price: 7.00 },
+            { name: "Lamarão", price: 7.00 },
+            { name: "Cidade Nova", price: 8.00 },
+            { name: "Sede de Socorro", price: 10.00 }
+          ];
+      }
     }
-    // Init stock defaults
     products.forEach(p => {
       if (appConfig.stock[p.id] === undefined) appConfig.stock[p.id] = true;
     });
@@ -899,15 +1183,25 @@
 
   // --- LOGICA DE ADMINISTRAÇÃO UI ---
   function saveAdminConfig() {
-    // Ler valores dos inputs
     appConfig.hours.galeto.start = parseInt(document.getElementById('adminGaletoStart').value);
     appConfig.hours.galeto.end = parseInt(document.getElementById('adminGaletoEnd').value);
     appConfig.hours.batata.start = parseInt(document.getElementById('adminBatataStart').value);
     appConfig.hours.batata.end = parseInt(document.getElementById('adminBatataEnd').value);
     
-    appConfig.fees.perto = parseFloat(document.getElementById('adminFeePerto').value);
-    appConfig.fees.centro = parseFloat(document.getElementById('adminFeeCentro').value);
-    
+    // Ler zonas de entrega dinâmicas
+    const zoneInputs = document.querySelectorAll('.zone-input-group');
+    let newZones = [];
+    zoneInputs.forEach(group => {
+        const name = group.dataset.name;
+        const val = parseFloat(group.querySelector('input').value);
+        if(!isNaN(val)) {
+            newZones.push({ name: name, price: val });
+        }
+    });
+    // Manter ordem se possível, ou ordenar por preço
+    newZones.sort((a,b) => a.price - b.price);
+    appConfig.deliveryZones = newZones;
+
     appConfig.isOpenManually = document.getElementById('adminOpenToggle').checked;
     
     products.forEach(p => {
@@ -915,11 +1209,10 @@
       if (checkbox) appConfig.stock[p.id] = checkbox.checked;
     });
 
-    // Salvar (Firebase ou Local)
     saveConfigToFirebase();
-    
     closeAdmin();
     alert("Configurações atualizadas!");
+    updateDeliveryOptions(); // Atualiza UI imediata
   }
 
   function openAdmin() {
@@ -965,52 +1258,98 @@
     const body = document.getElementById('adminBody');
     const footer = document.querySelector('#adminModalOverlay .modal-footer');
 
+    // Gerar inputs de zonas de entrega
+    let zonesHtml = '';
+    // Garantir que existe
+    if(!appConfig.deliveryZones) appConfig.deliveryZones = [];
+    
+    appConfig.deliveryZones.forEach(z => {
+        zonesHtml += `
+            <div class="zone-item zone-input-group" data-name="${z.name}">
+                <label class="zone-label">${z.name}</label>
+                <div style="display:flex; align-items:center; gap:4px;">
+                    <span style="font-size:12px; color:#666;">R$</span>
+                    <input type="number" step="0.50" class="modal-input" style="padding: 6px; font-weight:700;" value="${z.price}">
+                </div>
+            </div>
+        `;
+    });
+
     body.innerHTML = `
-      <div class="admin-section">
-        <div class="admin-title">Geral</div>
-        <div class="admin-row">
-          <span class="switch-label">Loja Aberta (Geral)</span>
-          <label class="switch"><input type="checkbox" id="adminOpenToggle" ${appConfig.isOpenManually ? 'checked' : ''}><span class="slider"></span></label>
-        </div>
-      </div>
-
-      <div class="admin-section">
-        <div class="admin-title">Horários (Início - Fim)</div>
-        <div class="input-group">
-          <label>Galeto (Sáb/Dom)</label>
-          <div style="display:flex; gap:10px">
-            <input type="number" id="adminGaletoStart" class="modal-input" value="${appConfig.hours.galeto.start}">
-            <input type="number" id="adminGaletoEnd" class="modal-input" value="${appConfig.hours.galeto.end}">
+      <div class="admin-container">
+          
+          <!-- Card Status Geral -->
+          <div class="admin-card">
+            <div class="admin-header-row" style="margin-bottom:0; border-bottom:none;">
+              <span class="admin-section-title">⚡ Status da Loja (Manual)</span>
+              <label class="switch">
+                <input type="checkbox" id="adminOpenToggle" ${appConfig.isOpenManually ? 'checked' : ''}>
+                <span class="slider"></span>
+              </label>
+            </div>
+            <div style="font-size:11px; color:var(--text-sec); margin-top: -10px;">Força a loja a ficar aberta/fechada independente do horário.</div>
           </div>
-        </div>
-        <div class="input-group">
-          <label>Batata (Seg-Sex 17-21)</label>
-          <div style="display:flex; gap:10px">
-            <input type="number" id="adminBatataStart" class="modal-input" value="${appConfig.hours.batata.start}">
-            <input type="number" id="adminBatataEnd" class="modal-input" value="${appConfig.hours.batata.end}">
-          </div>
-        </div>
-      </div>
 
-      <div class="admin-section">
-        <div class="admin-title">Valores de Entrega</div>
-        <div class="input-group"><label>Bairros Próximos</label><input type="number" id="adminFeePerto" class="modal-input" value="${appConfig.fees.perto}"></div>
-        <div class="input-group"><label>Centro / Longe</label><input type="number" id="adminFeeCentro" class="modal-input" value="${appConfig.fees.centro}"></div>
-      </div>
+          <!-- Card Horários -->
+          <div class="admin-card">
+            <div class="admin-header-row">
+                <span class="admin-section-title">⏰ Horários de Funcionamento</span>
+            </div>
+            
+            <div class="admin-input-row">
+              <div class="admin-label-sm">🍗 Galeto (Sáb/Dom)</div>
+              <input type="number" id="adminGaletoStart" class="admin-input-sm" value="${appConfig.hours.galeto.start}">
+              <span style="color:#666">-</span>
+              <input type="number" id="adminGaletoEnd" class="admin-input-sm" value="${appConfig.hours.galeto.end}">
+            </div>
 
-      <div class="admin-section">
-        <div class="admin-title">Controle de Estoque</div>
-        ${products.map((p, index) => `
-          <div class="admin-row" style="animation-delay: ${index * 0.03}s">
-            <span class="switch-label" style="font-size:12px">${p.name}</span>
-            <label class="switch"><input type="checkbox" id="stock_${p.id}" ${appConfig.stock[p.id] !== false ? 'checked' : ''}><span class="slider"></span></label>
+            <div class="admin-input-row">
+              <div class="admin-label-sm">🥔 Batata (Seg-Sex)</div>
+              <input type="number" id="adminBatataStart" class="admin-input-sm" value="${appConfig.hours.batata.start}">
+              <span style="color:#666">-</span>
+              <input type="number" id="adminBatataEnd" class="admin-input-sm" value="${appConfig.hours.batata.end}">
+            </div>
           </div>
-        `).join('')}
+
+          <!-- Card Taxas -->
+          <div class="admin-card">
+            <div class="admin-header-row">
+                <span class="admin-section-title">🛵 Taxas de Entrega</span>
+            </div>
+            <div class="admin-zones-grid">
+                ${zonesHtml}
+            </div>
+          </div>
+
+          <!-- Card Estoque -->
+          <div class="admin-card">
+            <div class="admin-header-row">
+                <span class="admin-section-title">📦 Controle de Estoque</span>
+            </div>
+            <div class="stock-grid">
+                ${products.map((p, index) => `
+                  <div class="stock-item">
+                    <div style="display:flex; align-items:center; gap:10px;">
+                        <span style="font-size:18px;">${p.img}</span>
+                        <div style="display:flex; flex-direction:column;">
+                            <span style="font-size:13px; font-weight:600; color:var(--text);">${p.name}</span>
+                            <span style="font-size:10px; color:var(--text-sec);">${formatMoney(p.price)}</span>
+                        </div>
+                    </div>
+                    <label class="switch">
+                        <input type="checkbox" id="stock_${p.id}" ${appConfig.stock[p.id] !== false ? 'checked' : ''}>
+                        <span class="slider"></span>
+                    </label>
+                  </div>
+                `).join('')}
+            </div>
+          </div>
+
       </div>
     `;
 
     footer.innerHTML = `
-      <button class="btn btn-primary" style="width:100%; justify-content: center;" onclick="window.saveAdminConfig()">Salvar e Sincronizar</button>
+      <button class="btn btn-primary" style="width:100%; justify-content: center; height: 48px; font-size: 15px;" onclick="window.saveAdminConfig()">💾 Salvar Alterações</button>
     `;
   }
 
@@ -1053,11 +1392,24 @@
 
   function updateDeliveryOptions() {
     const sel = document.getElementById('deliverySelect');
-    sel.innerHTML = `
-      <option value="0">Retirada (Grátis)</option>
-      <option value="${appConfig.fees.perto}">Bairros Próximos (${formatMoney(appConfig.fees.perto)})</option>
-      <option value="${appConfig.fees.centro}">Centro (${formatMoney(appConfig.fees.centro)})</option>
-    `;
+    
+    // Usar deliveryZones se existir (nova versão), senão fallback
+    let optionsHtml = '';
+    
+    if (appConfig.deliveryZones && appConfig.deliveryZones.length > 0) {
+        optionsHtml = appConfig.deliveryZones.map(z => 
+            `<option value="${z.price}">${z.name} (${z.price === 0 ? 'Grátis' : formatMoney(z.price)})</option>`
+        ).join('');
+    } else {
+        // Fallback antigo caso config não tenha atualizado
+        optionsHtml = `
+          <option value="0">Retirada (Grátis)</option>
+          <option value="5">Bairros Próximos (R$ 5,00)</option>
+          <option value="10">Centro (R$ 10,00)</option>
+        `;
+    }
+
+    sel.innerHTML = optionsHtml;
   }
 
   function renderCategories() {
@@ -1086,17 +1438,18 @@
           <div class="card-thumb">${p.img}</div>
           <div class="card-info">
             <h3 class="card-title">${p.name}</h3>
+            <div class="card-rating">★★★★★ <span style="color:var(--text-sec); font-size:10px">(120)</span></div>
             <p class="card-desc">${inStock ? p.desc : '❌ INDISPONÍVEL'}</p>
           </div>
         </div>
         <div class="card-price-row">
           <div class="price">${formatMoney(p.price)}</div>
           ${!inStock ? '' : (qty === 0 ? 
-            `<button class="add-btn" onclick="window.add('${p.id}')">+</button>` :
+            `<button class="add-btn" onclick="window.add('${p.id}', event)">+</button>` :
             `<div class="qty-controls">
                <button class="qty-btn" onclick="window.rem('${p.id}')">-</button>
                <span class="qty-val">${qty}</span>
-               <button class="qty-btn" onclick="window.add('${p.id}')">+</button>
+               <button class="qty-btn" onclick="window.add('${p.id}', event)">+</button>
              </div>`
           )}
         </div>
@@ -1106,6 +1459,25 @@
   }
 
   function renderExtras() {
+    const extrasBox = document.getElementById('extrasBox');
+    const extrasGrid = document.querySelector('.extras-grid');
+    
+    if (extras.length === 0) {
+        if(extrasBox) extrasBox.style.display = 'none';
+        if(extrasGrid) extrasGrid.style.gridTemplateColumns = '1fr';
+        return;
+    }
+
+    if(extrasBox) extrasBox.style.display = 'block';
+    if(extrasGrid) {
+        // Restaurar grid original (responsivo)
+        if (window.innerWidth > 768) {
+            extrasGrid.style.gridTemplateColumns = '1fr 1fr';
+        } else {
+            extrasGrid.style.gridTemplateColumns = '1fr';
+        }
+    }
+
     document.getElementById('extrasList').innerHTML = extras.map(ex => `
       <label class="check-item">
         <div class="check-left">
@@ -1113,7 +1485,7 @@
           <div class="custom-checkbox"></div>
           <span>${ex.name}</span>
         </div>
-        <span style="font-weight:600; color:var(--brand)">+${formatMoney(ex.price)}</span>
+        <span style="font-weight:600; color:var(--brand)">${ex.price > 0 ? '+' + formatMoney(ex.price) : 'Grátis'}</span>
       </label>
     `).join('');
   }
@@ -1121,9 +1493,15 @@
   function setCat(id) { activeCat = id; renderCategories(); renderMenu(); }
   function filterMenu() { renderMenu(); }
 
-  function add(id) {
+  function add(id, event) {
     id = parseInt(id);
     cart[id] = (cart[id] || 0) + 1;
+    
+    // Trigger explosion if event exists
+    if(event) {
+        window.explodeEmojis(event.clientX, event.clientY);
+    }
+
     renderMenu(); updateCartUI(); showToast();
   }
   function rem(id) {
@@ -1137,6 +1515,8 @@
   }
   function showToast() {
     const t = document.getElementById('toast');
+    // Garante que o texto seja o de item adicionado (caso o Pix tenha mudado antes)
+    t.innerHTML = "<span>✅</span> Item adicionado!";
     t.classList.add('visible'); setTimeout(() => t.classList.remove('visible'), 2000);
   }
   function clearCart() {
@@ -1181,7 +1561,12 @@
     const list = document.getElementById('cartItemsList');
     let html = '';
     if (Object.keys(cart).length === 0) {
-      list.innerHTML = '<div style="text-align:center; padding:20px; color:var(--text-sec)">Seu carrinho está vazio.</div>';
+      list.innerHTML = `
+        <div style="text-align:center; padding:40px 20px; color:var(--text-sec)">
+          <div style="font-size: 40px; margin-bottom: 10px; opacity:0.5">🛒</div>
+          <p>O seu carrinho está vazio.</p>
+          <button class="btn btn-sec" onclick="window.closeModal()" style="margin-top:10px; padding: 8px 16px; font-size:12px">Voltar ao Cardápio</button>
+        </div>`;
       return;
     }
     for (const [id, qty] of Object.entries(cart)) {
@@ -1210,9 +1595,10 @@
   function updateTotals() { updateCartUI(); }
 
   function openModal() {
-    if (getCartTotal() === 0 && selectedExtras.size === 0) { alert("Adicione itens!"); return; }
+    // Permite abrir modal mesmo vazio para ver histórico ou só checkar
     const overlay = document.getElementById('modalOverlay');
     overlay.style.display = 'flex'; setTimeout(() => overlay.classList.add('open'), 10);
+    renderCartItems(); // Garante render atualizado
   }
   function closeModal() {
     const overlay = document.getElementById('modalOverlay');
@@ -1221,8 +1607,19 @@
   function scrollToMenu() { document.getElementById('menu').scrollIntoView({ behavior: 'smooth' }); }
 
   document.getElementById('paymentMethod').addEventListener('change', function(e) {
-    const grp = document.getElementById('changeGroup');
-    if (e.target.value === 'Dinheiro') grp.style.display = 'block'; else grp.style.display = 'none';
+    const changeGrp = document.getElementById('changeGroup');
+    const pixGrp = document.getElementById('pixGroup');
+    
+    if (e.target.value === 'Dinheiro') {
+        changeGrp.style.display = 'block';
+        pixGrp.style.display = 'none';
+    } else if (e.target.value === 'Pix') {
+        changeGrp.style.display = 'none';
+        pixGrp.style.display = 'block';
+    } else {
+        changeGrp.style.display = 'none';
+        pixGrp.style.display = 'none';
+    }
   });
 
   async function sendOrder() {
@@ -1231,11 +1628,22 @@
     const address = document.getElementById('clientAddress').value;
     const payment = document.getElementById('paymentMethod').value;
     const change = document.getElementById('changeInput').value;
-    const deliveryVal = document.getElementById('deliverySelect').value;
+    const deliverySelect = document.getElementById('deliverySelect');
+    const deliveryVal = parseFloat(deliverySelect.value);
+    const deliveryText = deliverySelect.options[deliverySelect.selectedIndex].text;
     const obs = document.getElementById('obsInput').value;
 
+    if (Object.keys(cart).length === 0) { alert("Seu carrinho está vazio!"); return; }
     if (!name || !phone) { alert("Preencha nome e telefone."); return; }
     if (deliveryVal > 0 && !address) { alert("Preencha o endereço."); return; }
+
+    // Feedback visual imediato no botão
+    const btn = document.querySelector('.modal-footer .btn-primary');
+    const originalText = btn.innerText;
+    btn.innerText = "Gerando Pedido #..."; btn.disabled = true;
+
+    // Gerar número do pedido
+    const orderNum = await getNextOrderNumber();
 
     let itemsList = "";
     for (const [id, qty] of Object.entries(cart)) {
@@ -1247,22 +1655,22 @@
       selectedExtras.forEach(eid => itemsList += `${extras.find(x=>x.id===eid).name}, `);
     }
 
-    const total = getCartTotal() + getExtrasTotal() + parseFloat(deliveryVal);
+    const total = getCartTotal() + getExtrasTotal() + deliveryVal;
     
     const orderData = {
+        numero: orderNum,
         data: new Date().toLocaleString('pt-BR'),
         cliente: name,
         telefone: phone,
         valor: total,
         pagamento: payment + (payment === 'Dinheiro' && change ? ` (Troco: ${change})` : ''),
         endereco: address || "Retirada",
+        bairro: deliveryText,
         detalhes: itemsList,
-        entrega: parseFloat(deliveryVal)
+        entrega: deliveryVal
     };
 
-    const btn = document.querySelector('.modal-footer .btn-primary');
-    const originalText = btn.innerText;
-    btn.innerText = "Enviando..."; btn.disabled = true;
+    btn.innerText = "Enviando...";
 
     // 1. Enviar para Planilha (Google Sheets)
     if (APPS_SCRIPT_URL) {
@@ -1279,7 +1687,7 @@
     await saveOrderToFirebase(orderData);
 
     // 3. Montar msg WhatsApp
-    let msg = `*PEDIDO - Galeteria Pais e Filhos* 🍗\n`;
+    let msg = `*PEDIDO #${orderNum} - Galeteria Pais e Filhos* 🍗\n`;
     msg += `👤 *Cliente:* ${name}\n📞 *Tel:* ${phone}\n\n`;
     msg += `🛒 *ITENS:*\n`;
     for (const [id, qty] of Object.entries(cart)) {
@@ -1293,7 +1701,17 @@
     }
     msg += `\n💸 *Total:* ${formatMoney(total)}\n`;
     msg += `💳 *Pag:* ${payment} ${payment === 'Dinheiro' && change ? '(Troco: ' + change + ')' : ''}\n`;
-    if (parseFloat(deliveryVal) > 0) msg += `📍 *Endereço:* ${address}\n`; else msg += `🏃 *Retirada*\n`;
+    
+    // Ajuste da mensagem de endereço com o bairro selecionado
+    if (deliveryVal > 0) {
+        // Extrair nome do bairro do texto do option (ex: "Piabeta (R$ 5,00)")
+        let bairroNome = deliveryText.split('(')[0].trim();
+        msg += `📍 *Endereço:* ${address}\n`; 
+        msg += `🛵 *Bairro/Taxa:* ${bairroNome} (${formatMoney(deliveryVal)})\n`;
+    } else {
+        msg += `🏃 *Retirada no Local*\n`;
+    }
+    
     if (obs) msg += `📝 *Obs:* ${obs}\n`;
 
     btn.innerText = originalText; btn.disabled = false;
