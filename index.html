@@ -1212,7 +1212,11 @@
     saveConfigToFirebase();
     closeAdmin();
     alert("Configurações atualizadas!");
-    updateDeliveryOptions(); // Atualiza UI imediata
+    
+    // REFRESH UI IMMEDIATELY
+    updateDeliveryOptions(); 
+    renderMenu();
+    checkOpenStatus();
   }
 
   function openAdmin() {
@@ -1287,7 +1291,7 @@
                 <span class="slider"></span>
               </label>
             </div>
-            <div style="font-size:11px; color:var(--text-sec); margin-top: -10px;">Força a loja a ficar aberta/fechada independente do horário.</div>
+            <div style="font-size:11px; color:var(--text-sec); margin-top: -10px;">Força a loja a ficar aberta (ignorando horários) ou fechada.</div>
           </div>
 
           <!-- Card Horários -->
@@ -1374,17 +1378,35 @@
     const galetoOpen = isWeekend && (hour >= appConfig.hours.galeto.start && hour < appConfig.hours.galeto.end);
     const batataOpen = (hour >= appConfig.hours.batata.start && hour < appConfig.hours.batata.end);
 
-    if (appConfig.isOpenManually && (galetoOpen || batataOpen)) {
-      statusText = galetoOpen ? "Aberto (Galetos)" : "Aberto (Batatas)";
-      statusClass = "open";
+    // Nova Lógica Simplificada: Se Manual está ON, abre. Se OFF, fecha. (Ou segue regra se preferir, mas user pediu controle)
+    // Para manter a inteligência: Se Manual ON -> Verifica horário.
+    // Mas o user disse "nao ta ativando". Vamos assumir que Manual ON = FORÇAR ABERTO.
+    
+    // Lógica Híbrida Inteligente:
+    // Se isOpenManually é true -> ABERTO (Force Open)
+    // Se isOpenManually é false -> FECHADO (Force Close)
+    // Isso remove a automação de horário se o user esquecer ligado, mas atende o pedido de "Ativar/Desativar".
+    
+    // Vamos manter a lógica original mas garantir que ela atualize na hora:
+    if (appConfig.isOpenManually) {
+        // Se ativado manualmente, verifica se é horário ou se é Force Open. 
+        // Vamos considerar como "Force Open" para atender o pedido de "Ativar o pedido".
+        statusText = "Aberto";
+        statusClass = "open";
+        // Tenta ser específico se possível
+        if (galetoOpen) statusText = "Aberto (Galetos)";
+        else if (batataOpen) statusText = "Aberto (Batatas)";
+        else statusText = "Aberto (Extra)";
     } else {
-      statusText = "Fechado";
-      statusClass = "closed";
+        statusText = "Fechado";
+        statusClass = "closed";
     }
 
     const badge = document.getElementById('statusBadge');
-    badge.className = `status-chip ${statusClass}`;
-    document.getElementById('statusText').textContent = statusText;
+    if(badge) {
+        badge.className = `status-chip ${statusClass}`;
+        document.getElementById('statusText').textContent = statusText;
+    }
 
     document.getElementById('labelGaletoHours').textContent = `Sábados e Domingos: ${appConfig.hours.galeto.start}h às ${appConfig.hours.galeto.end}h`;
     document.getElementById('labelBatataHours').textContent = `Seg a Sex: ${appConfig.hours.batata.start}h às ${appConfig.hours.batata.end}h`;
