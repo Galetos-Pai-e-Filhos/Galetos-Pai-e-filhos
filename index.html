@@ -981,24 +981,33 @@
   window.explodeEmojis = explodeEmojis;
   window.copyPix = copyPix;
 
-  // --- FUNÇÃO PARA GERAR NÚMERO DO PEDIDO ---
+  // --- FUNÇÃO PARA GERAR NÚMERO DO PEDIDO (COM TIMEOUT) ---
   async function getNextOrderNumber() {
-      // 1. Tenta pegar do Firebase
-      if (db && user) {
-          try {
+      // Cria uma promessa que rejeita após 2 segundos (Timeout)
+      const timeout = new Promise((_, reject) => 
+          setTimeout(() => reject(new Error("Timeout")), 2000)
+      );
+
+      // Tenta buscar no Firebase
+      const fetchOrder = async () => {
+          if (db && user) {
               const colRef = collection(db, 'artifacts', appId, 'public', 'data', 'orders');
               const snapshot = await getDocs(colRef);
-              const count = snapshot.size + 1;
-              return count.toString().padStart(2, '0'); // Ex: "01", "02", "10"
-          } catch (e) {
-              console.error("Erro ao numerar pedido online:", e);
+              return (snapshot.size + 1).toString().padStart(2, '0');
           }
+          throw new Error("No DB");
+      };
+
+      try {
+          // Corrida entre buscar o número e o timeout de 2s
+          return await Promise.race([fetchOrder(), timeout]);
+      } catch (e) {
+          // Se der erro ou demorar muito, usa local storage (Fallback)
+          console.log("Usando numeração local (fallback)");
+          let count = parseInt(localStorage.getItem('localOrderCount') || '0') + 1;
+          localStorage.setItem('localOrderCount', count);
+          return count.toString().padStart(2, '0') + " (Offline)";
       }
-      
-      // 2. Fallback Local (se offline ou erro)
-      let count = parseInt(localStorage.getItem('localOrderCount') || '0') + 1;
-      localStorage.setItem('localOrderCount', count);
-      return count.toString().padStart(2, '0');
   }
 
   // --- FUNÇÃO COPIAR PIX ---
@@ -1182,7 +1191,11 @@
   }
 
   // --- LOGICA DE ADMINISTRAÇÃO UI ---
-  function saveAdminConfig() {
+  async function saveAdminConfig() {
+    const btn = document.querySelector('#adminModalOverlay .btn-primary');
+    const oldText = btn.innerText;
+    btn.innerText = "Salvando..."; btn.disabled = true;
+
     appConfig.hours.galeto.start = parseInt(document.getElementById('adminGaletoStart').value);
     appConfig.hours.galeto.end = parseInt(document.getElementById('adminGaletoEnd').value);
     appConfig.hours.batata.start = parseInt(document.getElementById('adminBatataStart').value);
@@ -1209,14 +1222,20 @@
       if (checkbox) appConfig.stock[p.id] = checkbox.checked;
     });
 
-    saveConfigToFirebase();
+    await saveConfigToFirebase();
+    
+    btn.innerText = oldText; btn.disabled = false;
     closeAdmin();
-    alert("Configurações atualizadas!");
     
     // REFRESH UI IMMEDIATELY
     updateDeliveryOptions(); 
     renderMenu();
     checkOpenStatus();
+    
+    // Mostra Toast de sucesso
+    const t = document.getElementById('toast');
+    t.innerHTML = "<span>⚙️</span> Configurações Atualizadas!";
+    t.classList.add('visible'); setTimeout(() => t.classList.remove('visible'), 2000);
   }
 
   function openAdmin() {
@@ -1694,21 +1713,19 @@
 
     btn.innerText = "Enviando...";
 
-    // 1. Enviar para Planilha (Google Sheets)
+    // 1. Enviar para Planilha (Google Sheets) em BACKGROUND (Sem esperar)
     if (APPS_SCRIPT_URL) {
-        try {
-            fetch(APPS_SCRIPT_URL, {
-                method: 'POST', mode: 'no-cors',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(orderData)
-            });
-        } catch (error) { console.log("Erro planilha:", error); }
+        fetch(APPS_SCRIPT_URL, {
+            method: 'POST', mode: 'no-cors',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(orderData)
+        }).catch(err => console.log('Erro silencioso na planilha:', err));
     }
 
-    // 2. Enviar para Firebase (Firestore) - Histórico Seguro
-    await saveOrderToFirebase(orderData);
+    // 2. Enviar para Firebase em BACKGROUND (Sem esperar)
+    saveOrderToFirebase(orderData).catch(err => console.log('Erro silencioso no Firebase:', err));
 
-    // 3. Montar msg WhatsApp
+    // 3. Montar msg WhatsApp e ABRIR IMEDIATAMENTE
     let msg = `*PEDIDO #${orderNum} - Galeteria Pais e Filhos* 🍗\n`;
     msg += `👤 *Cliente:* ${name}\n📞 *Tel:* ${phone}\n\n`;
     msg += `🛒 *ITENS:*\n`;
@@ -1736,7 +1753,12 @@
     
     if (obs) msg += `📝 *Obs:* ${obs}\n`;
 
-    btn.innerText = originalText; btn.disabled = false;
+    // Resetar botão e abrir Whats
+    setTimeout(() => {
+        btn.innerText = originalText; 
+        btn.disabled = false;
+    }, 2000);
+    
     window.open(`https://wa.me/${WHATSAPP}?text=${encodeURIComponent(msg)}`, '_blank');
   }
 
