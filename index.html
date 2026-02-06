@@ -94,6 +94,17 @@
       100% { transform: translate(var(--tx), var(--ty)) scale(1.5) rotate(var(--rot)); opacity: 0; }
     }
 
+    /* Animação do Foguinho */
+    @keyframes firePulse {
+      0% { transform: scale(1) rotate(0deg); filter: drop-shadow(0 0 0 rgba(255, 100, 0, 0)); }
+      50% { transform: scale(1.3) rotate(-5deg); filter: drop-shadow(0 0 8px rgba(255, 69, 0, 0.8)); }
+      100% { transform: scale(1) rotate(0deg); filter: drop-shadow(0 0 0 rgba(255, 100, 0, 0)); }
+    }
+    .fire-icon {
+      display: inline-block;
+      animation: firePulse 1.5s infinite ease-in-out;
+    }
+
     /* --- TOPBAR --- */
     .topbar {
       position: sticky; top: 0; z-index: 50;
@@ -677,7 +688,7 @@
     <div class="hero">
       <div class="hero-content">
         <div class="hero-badges">
-          <span class="badge">🔥 Promoção do Dia</span>
+          <span class="badge"><span class="fire-icon">🔥</span> Promoção do Dia</span>
           <span class="badge">🚀 Entrega Rápida</span>
         </div>
         
