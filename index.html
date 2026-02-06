@@ -1129,7 +1129,7 @@
       console.log("Config salva no Firebase!");
     } catch (e) {
       console.error("Erro ao salvar config:", e);
-      alert("⚠️ Erro ao salvar na nuvem! Verifique sua internet.");
+      alert("⚠️ Erro ao salvar na nuvem! Verifique sua internet.\nErro: " + e.message);
       throw e;
     }
   }
@@ -1203,7 +1203,7 @@
   async function saveAdminConfig() {
     const btn = document.querySelector('#adminModalOverlay .btn-primary');
     const oldText = btn.innerText;
-    btn.innerText = "Salvando na Nuvem..."; btn.disabled = true;
+    btn.innerText = "Salvando..."; btn.disabled = true;
 
     try {
         appConfig.hours.galeto.start = parseInt(document.getElementById('adminGaletoStart').value);
@@ -1238,6 +1238,11 @@
           }
         });
 
+        // Força atualização local ANTES de salvar na nuvem (UI Response)
+        updateDeliveryOptions(); 
+        renderMenu();
+        checkOpenStatus();
+
         await saveConfigToFirebase();
         
         // Feedback visual de sucesso
@@ -1246,11 +1251,6 @@
         t.classList.add('visible'); setTimeout(() => t.classList.remove('visible'), 3000);
 
         closeAdmin();
-        
-        // REFRESH UI IMMEDIATELY
-        updateDeliveryOptions(); 
-        renderMenu();
-        checkOpenStatus();
 
     } catch (error) {
         console.error(error);
@@ -1685,6 +1685,7 @@
     }
   });
 
+  // FUNÇÃO DE ENVIO OTIMIZADA (SEM TRAVAMENTOS)
   async function sendOrder() {
     const name = document.getElementById('clientName').value;
     const phone = document.getElementById('clientPhone').value;
@@ -1696,18 +1697,23 @@
     const deliveryText = deliverySelect.options[deliverySelect.selectedIndex].text;
     const obs = document.getElementById('obsInput').value;
 
+    // Validações básicas
     if (Object.keys(cart).length === 0) { alert("Seu carrinho está vazio!"); return; }
     if (!name || !phone) { alert("Preencha nome e telefone."); return; }
     if (deliveryVal > 0 && !address) { alert("Preencha o endereço."); return; }
 
-    // Feedback visual imediato no botão
     const btn = document.querySelector('.modal-footer .btn-primary');
     const originalText = btn.innerText;
-    btn.innerText = "Gerando Pedido #..."; btn.disabled = true;
+    btn.innerText = "Abrindo WhatsApp..."; 
+    // Não desabilitamos o botão imediatamente para garantir o evento de clique do mobile
 
-    // Gerar número do pedido
-    const orderNum = await getNextOrderNumber();
+    // 1. Geração INSTANTÂNEA do número (baseada no histórico local para velocidade)
+    // Se o Firebase estiver lento, isso garante que o cliente não fique esperando.
+    let localCount = parseInt(localStorage.getItem('localOrderCount') || '0');
+    let orderNum = (localCount + 1).toString().padStart(2, '0');
+    localStorage.setItem('localOrderCount', localCount + 1);
 
+    // 2. Montagem da Mensagem
     let itemsList = "";
     for (const [id, qty] of Object.entries(cart)) {
       const p = products.find(x => x.id == id);
@@ -1720,34 +1726,6 @@
 
     const total = getCartTotal() + getExtrasTotal() + deliveryVal;
     
-    const orderData = {
-        numero: orderNum,
-        data: new Date().toLocaleString('pt-BR'),
-        cliente: name,
-        telefone: phone,
-        valor: total,
-        pagamento: payment + (payment === 'Dinheiro' && change ? ` (Troco: ${change})` : ''),
-        endereco: address || "Retirada",
-        bairro: deliveryText,
-        detalhes: itemsList,
-        entrega: deliveryVal
-    };
-
-    btn.innerText = "Enviando...";
-
-    // 1. Enviar para Planilha (Google Sheets) em BACKGROUND (Sem esperar)
-    if (APPS_SCRIPT_URL) {
-        fetch(APPS_SCRIPT_URL, {
-            method: 'POST', mode: 'no-cors',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(orderData)
-        }).catch(err => console.log('Erro silencioso na planilha:', err));
-    }
-
-    // 2. Enviar para Firebase em BACKGROUND (Sem esperar)
-    saveOrderToFirebase(orderData).catch(err => console.log('Erro silencioso no Firebase:', err));
-
-    // 3. Montar msg WhatsApp e ABRIR IMEDIATAMENTE
     let msg = `*PEDIDO #${orderNum} - Galeteria Pais e Filhos* 🍗\n`;
     msg += `👤 *Cliente:* ${name}\n📞 *Tel:* ${phone}\n\n`;
     msg += `🛒 *ITENS:*\n`;
@@ -1763,9 +1741,7 @@
     msg += `\n💸 *Total:* ${formatMoney(total)}\n`;
     msg += `💳 *Pag:* ${payment} ${payment === 'Dinheiro' && change ? '(Troco: ' + change + ')' : ''}\n`;
     
-    // Ajuste da mensagem de endereço com o bairro selecionado
     if (deliveryVal > 0) {
-        // Extrair nome do bairro do texto do option (ex: "Piabeta (R$ 5,00)")
         let bairroNome = deliveryText.split('(')[0].trim();
         msg += `📍 *Endereço:* ${address}\n`; 
         msg += `🛵 *Bairro/Taxa:* ${bairroNome} (${formatMoney(deliveryVal)})\n`;
@@ -1775,13 +1751,43 @@
     
     if (obs) msg += `📝 *Obs:* ${obs}\n`;
 
-    // Resetar botão e abrir Whats
+    // 3. ABERTURA IMEDIATA DO WHATSAPP (Prioridade Total)
+    // Isso acontece ANTES de tentar salvar qualquer coisa no banco de dados
+    const waLink = `https://wa.me/${WHATSAPP}?text=${encodeURIComponent(msg)}`;
+    window.open(waLink, '_blank');
+
+    // 4. Salva os dados em "Segundo Plano" (Fire and Forget)
+    // O cliente já foi pro WhatsApp, mas o sistema salva aqui
+    const orderData = {
+        numero: orderNum,
+        data: new Date().toLocaleString('pt-BR'),
+        cliente: name,
+        telefone: phone,
+        valor: total,
+        pagamento: payment + (payment === 'Dinheiro' && change ? ` (Troco: ${change})` : ''),
+        endereco: address || "Retirada",
+        bairro: deliveryText,
+        detalhes: itemsList,
+        entrega: deliveryVal
+    };
+
+    // Salvar na Planilha
+    if (APPS_SCRIPT_URL) {
+        fetch(APPS_SCRIPT_URL, {
+            method: 'POST', mode: 'no-cors',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(orderData)
+        }).catch(e => console.log("Erro planilha (não bloqueante):", e));
+    }
+
+    // Salvar no Firebase
+    saveOrderToFirebase(orderData).catch(e => console.log("Erro Firebase (não bloqueante):", e));
+
+    // Resetar UI
     setTimeout(() => {
-        btn.innerText = originalText; 
-        btn.disabled = false;
-    }, 2000);
-    
-    window.open(`https://wa.me/${WHATSAPP}?text=${encodeURIComponent(msg)}`, '_blank');
+        btn.innerText = originalText;
+        window.closeModal();
+    }, 1000);
   }
 
   // Initial render (will be updated when Firebase connects)
