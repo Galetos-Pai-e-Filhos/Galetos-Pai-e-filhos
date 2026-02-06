@@ -693,7 +693,7 @@
             <span class="hours-icon">🥔</span>
             <div class="hours-info">
               <strong>Batatas Recheadas</strong>
-              <span id="labelBatataHours">Seg a Sex: 17h às 21h</span>
+              <span id="labelBatataHours">Qua a Dom: 18h às 22h</span>
             </div>
           </div>
         </div>
@@ -929,7 +929,7 @@
     ],
     hours: {
       galeto: { start: 9, end: 15 },
-      batata: { start: 17, end: 21 }
+      batata: { start: 18, end: 22 }
     },
     stock: {}
   };
@@ -1349,7 +1349,7 @@
             </div>
 
             <div class="admin-input-row">
-              <div class="admin-label-sm">🥔 Batata (Seg-Sex)</div>
+              <div class="admin-label-sm">🥔 Batata (Qua-Dom)</div>
               <input type="number" id="adminBatataStart" class="admin-input-sm" value="${appConfig.hours.batata.start}">
               <span style="color:#666">-</span>
               <input type="number" id="adminBatataEnd" class="admin-input-sm" value="${appConfig.hours.batata.end}">
@@ -1409,29 +1409,22 @@
 
   function checkOpenStatus() {
     const now = new Date();
-    const day = now.getDay(); 
+    const day = now.getDay(); // 0=Dom, 1=Seg, ..., 6=Sáb
     const hour = now.getHours();
 
     let statusText = "Fechado";
     let statusClass = "closed";
 
-    const isWeekend = (day === 0 || day === 6);
-    const galetoOpen = isWeekend && (hour >= appConfig.hours.galeto.start && hour < appConfig.hours.galeto.end);
-    const batataOpen = (hour >= appConfig.hours.batata.start && hour < appConfig.hours.batata.end);
+    // Dias de funcionamento
+    const isWeekend = (day === 0 || day === 6); // Sáb e Dom
+    // Batata: Quarta(3), Quinta(4), Sexta(5), Sábado(6), Domingo(0)
+    const isBatataDay = (day >= 3 || day === 0);
 
-    // Nova Lógica Simplificada: Se Manual está ON, abre. Se OFF, fecha. (Ou segue regra se preferir, mas user pediu controle)
-    // Para manter a inteligência: Se Manual ON -> Verifica horário.
-    // Mas o user disse "nao ta ativando". Vamos assumir que Manual ON = FORÇAR ABERTO.
-    
-    // Lógica Híbrida Inteligente:
-    // Se isOpenManually é true -> ABERTO (Force Open)
-    // Se isOpenManually é false -> FECHADO (Force Close)
-    // Isso remove a automação de horário se o user esquecer ligado, mas atende o pedido de "Ativar/Desativar".
-    
-    // Vamos manter a lógica original mas garantir que ela atualize na hora:
+    const galetoOpen = isWeekend && (hour >= appConfig.hours.galeto.start && hour < appConfig.hours.galeto.end);
+    const batataOpen = isBatataDay && (hour >= appConfig.hours.batata.start && hour < appConfig.hours.batata.end);
+
+    // Nova Lógica Simplificada: Se Manual está ON, abre. Se OFF, fecha.
     if (appConfig.isOpenManually) {
-        // Se ativado manualmente, verifica se é horário ou se é Force Open. 
-        // Vamos considerar como "Force Open" para atender o pedido de "Ativar o pedido".
         statusText = "Aberto";
         statusClass = "open";
         // Tenta ser específico se possível
@@ -1450,7 +1443,7 @@
     }
 
     document.getElementById('labelGaletoHours').textContent = `Sábados e Domingos: ${appConfig.hours.galeto.start}h às ${appConfig.hours.galeto.end}h`;
-    document.getElementById('labelBatataHours').textContent = `Seg a Sex: ${appConfig.hours.batata.start}h às ${appConfig.hours.batata.end}h`;
+    document.getElementById('labelBatataHours').textContent = `Qua a Dom: ${appConfig.hours.batata.start}h às ${appConfig.hours.batata.end}h`;
   }
 
   function updateDeliveryOptions() {
