@@ -1086,35 +1086,30 @@
     onSnapshot(docRef, (docSnap) => {
       if (docSnap.exists()) {
         const remoteConfig = docSnap.data();
-        appConfig = { ...appConfig, ...remoteConfig }; 
-        // Backward compatibility check for deliveryZones
-        if(!appConfig.deliveryZones) {
-           appConfig.deliveryZones = [
-            { name: "Retirada", price: 0 },
-            { name: "Albano Franco", price: 2.00 },
-            { name: "Marcos Freire 1", price: 3.00 },
-            { name: "Marcos Freire 3", price: 3.00 },
-            { name: "Taiçoca de Dentro", price: 3.00 },
-            { name: "Maria do Carmo", price: 4.00 },
-            { name: "Novo Horizonte", price: 4.00 },
-            { name: "Marcos Freire 2", price: 4.00 },
-            { name: "Piabeta", price: 5.00 },
-            { name: "João Alves", price: 5.00 },
-            { name: "Porto D'antas", price: 5.00 },
-            { name: "Neuzice Barreto", price: 5.00 },
-            { name: "Taiçoca de Fora", price: 5.00 },
-            { name: "Fernando Collor", price: 6.00 },
-            { name: "Bairro Industrial", price: 6.00 },
-            { name: "Japãozinho", price: 7.00 },
-            { name: "Lamarão", price: 7.00 },
-            { name: "Cidade Nova", price: 8.00 },
-            { name: "Sede de Socorro", price: 10.00 }
-           ];
+        
+        // CORREÇÃO: Mesclar objetos aninhados (stock) corretamente
+        appConfig = { 
+            ...appConfig, 
+            ...remoteConfig,
+            stock: { ...appConfig.stock, ...(remoteConfig.stock || {}) },
+            hours: { ...appConfig.hours, ...(remoteConfig.hours || {}) }
+        };
+        
+        if(remoteConfig.deliveryZones) {
+            appConfig.deliveryZones = remoteConfig.deliveryZones;
         }
-        console.log("Config atualizada do Firebase!");
+
+        console.log("Config atualizada do Firebase!", appConfig);
+        
         renderMenu();
         updateDeliveryOptions();
         checkOpenStatus();
+        
+        // Se o admin estiver aberto, atualiza os botões visualmente
+        if(document.getElementById('adminModalOverlay').classList.contains('open')) {
+            refreshAdminSwitches();
+        }
+
       } else {
         saveConfigToFirebase();
       }
@@ -1134,7 +1129,8 @@
       console.log("Config salva no Firebase!");
     } catch (e) {
       console.error("Erro ao salvar config:", e);
-      alert("Erro ao salvar na nuvem. Verifique sua conexão.");
+      alert("⚠️ Erro ao salvar na nuvem! Verifique sua internet.");
+      throw e;
     }
   }
 
@@ -1183,6 +1179,7 @@
       }
     }
     products.forEach(p => {
+      // Se não estiver definido no config carregado, assume true
       if (appConfig.stock[p.id] === undefined) appConfig.stock[p.id] = true;
     });
     renderMenu();
@@ -1191,51 +1188,76 @@
   }
 
   // --- LOGICA DE ADMINISTRAÇÃO UI ---
+  
+  // Função auxiliar para manter o admin visualmente sincronizado
+  function refreshAdminSwitches() {
+      const toggleOpen = document.getElementById('adminOpenToggle');
+      if(toggleOpen) toggleOpen.checked = appConfig.isOpenManually;
+
+      products.forEach(p => {
+          const checkbox = document.getElementById(`stock_${p.id}`);
+          if (checkbox) checkbox.checked = appConfig.stock[p.id] !== false;
+      });
+  }
+
   async function saveAdminConfig() {
     const btn = document.querySelector('#adminModalOverlay .btn-primary');
     const oldText = btn.innerText;
-    btn.innerText = "Salvando..."; btn.disabled = true;
+    btn.innerText = "Salvando na Nuvem..."; btn.disabled = true;
 
-    appConfig.hours.galeto.start = parseInt(document.getElementById('adminGaletoStart').value);
-    appConfig.hours.galeto.end = parseInt(document.getElementById('adminGaletoEnd').value);
-    appConfig.hours.batata.start = parseInt(document.getElementById('adminBatataStart').value);
-    appConfig.hours.batata.end = parseInt(document.getElementById('adminBatataEnd').value);
-    
-    // Ler zonas de entrega dinâmicas
-    const zoneInputs = document.querySelectorAll('.zone-input-group');
-    let newZones = [];
-    zoneInputs.forEach(group => {
-        const name = group.dataset.name;
-        const val = parseFloat(group.querySelector('input').value);
-        if(!isNaN(val)) {
-            newZones.push({ name: name, price: val });
-        }
-    });
-    // Manter ordem se possível, ou ordenar por preço
-    newZones.sort((a,b) => a.price - b.price);
-    appConfig.deliveryZones = newZones;
+    try {
+        appConfig.hours.galeto.start = parseInt(document.getElementById('adminGaletoStart').value);
+        appConfig.hours.galeto.end = parseInt(document.getElementById('adminGaletoEnd').value);
+        appConfig.hours.batata.start = parseInt(document.getElementById('adminBatataStart').value);
+        appConfig.hours.batata.end = parseInt(document.getElementById('adminBatataEnd').value);
+        
+        // Ler zonas de entrega dinâmicas
+        const zoneInputs = document.querySelectorAll('.zone-input-group');
+        let newZones = [];
+        zoneInputs.forEach(group => {
+            const name = group.dataset.name;
+            const val = parseFloat(group.querySelector('input').value);
+            if(!isNaN(val)) {
+                newZones.push({ name: name, price: val });
+            }
+        });
+        newZones.sort((a,b) => a.price - b.price);
+        appConfig.deliveryZones = newZones;
 
-    appConfig.isOpenManually = document.getElementById('adminOpenToggle').checked;
-    
-    products.forEach(p => {
-      const checkbox = document.getElementById(`stock_${p.id}`);
-      if (checkbox) appConfig.stock[p.id] = checkbox.checked;
-    });
+        appConfig.isOpenManually = document.getElementById('adminOpenToggle').checked;
+        
+        // CORREÇÃO: Captura explícita do estado dos checkboxes
+        products.forEach(p => {
+          const checkbox = document.getElementById(`stock_${p.id}`);
+          if (checkbox) {
+              if (checkbox.checked) {
+                  appConfig.stock[p.id] = true; 
+              } else {
+                  appConfig.stock[p.id] = false;
+              }
+          }
+        });
 
-    await saveConfigToFirebase();
-    
-    btn.innerText = oldText; btn.disabled = false;
-    closeAdmin();
-    
-    // REFRESH UI IMMEDIATELY
-    updateDeliveryOptions(); 
-    renderMenu();
-    checkOpenStatus();
-    
-    // Mostra Toast de sucesso
-    const t = document.getElementById('toast');
-    t.innerHTML = "<span>⚙️</span> Configurações Atualizadas!";
-    t.classList.add('visible'); setTimeout(() => t.classList.remove('visible'), 2000);
+        await saveConfigToFirebase();
+        
+        // Feedback visual de sucesso
+        const t = document.getElementById('toast');
+        t.innerHTML = "<span>☁️</span> Salvo para todos!";
+        t.classList.add('visible'); setTimeout(() => t.classList.remove('visible'), 3000);
+
+        closeAdmin();
+        
+        // REFRESH UI IMMEDIATELY
+        updateDeliveryOptions(); 
+        renderMenu();
+        checkOpenStatus();
+
+    } catch (error) {
+        console.error(error);
+        // O alert já está no saveConfigToFirebase
+    } finally {
+        btn.innerText = oldText; btn.disabled = false;
+    }
   }
 
   function openAdmin() {
