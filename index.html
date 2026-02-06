@@ -1680,6 +1680,13 @@
 
   // FUNÇÃO DE ENVIO OTIMIZADA (SEM TRAVAMENTOS)
   async function sendOrder() {
+    // --- TRAVA DE LOJA FECHADA ---
+    if (!appConfig.isOpenManually) {
+        alert("⛔ LOJA FECHADA!\n\nNo momento não estamos aceitando pedidos. Por favor, aguarde nosso horário de funcionamento.");
+        return; // Para a execução aqui
+    }
+    // -----------------------------
+
     const name = document.getElementById('clientName').value;
     const phone = document.getElementById('clientPhone').value;
     const address = document.getElementById('clientAddress').value;
