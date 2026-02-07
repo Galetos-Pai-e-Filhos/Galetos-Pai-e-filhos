@@ -1743,11 +1743,13 @@
 
     const total = getCartTotal() + getExtrasTotal() + deliveryVal;
     
-    // Lógica Melhorada de Pagamento (Adiciona "Cobrar" para Dinheiro/Cartão)
+    // Lógica de Pagamento Ajustada (Valor aparece para TODOS: Pix, Dinheiro e Cartão)
     let pagamentoTexto = payment;
-    if (payment === 'Dinheiro' || payment === 'Cartão') {
-        pagamentoTexto += ` (Cobrar: ${formatMoney(total)})`;
-    }
+    
+    // Adiciona o valor total formatado para todas as formas de pagamento
+    pagamentoTexto += ` (Valor: ${formatMoney(total)})`;
+
+    // Se for dinheiro e tiver troco, adiciona a informação
     if (payment === 'Dinheiro' && change) {
         pagamentoTexto += ` (Troco para: ${change})`;
     }
