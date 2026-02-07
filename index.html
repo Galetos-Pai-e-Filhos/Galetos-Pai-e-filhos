@@ -992,32 +992,35 @@
   window.explodeEmojis = explodeEmojis;
   window.copyPix = copyPix;
 
-  // --- FUNÇÃO PARA GERAR NÚMERO DO PEDIDO (COM TIMEOUT) ---
+  // --- FUNÇÃO PARA GERAR NÚMERO DO PEDIDO (GLOBAL E SEQUENCIAL) ---
   async function getNextOrderNumber() {
-      // Cria uma promessa que rejeita após 2 segundos (Timeout)
+      // Timeout de 3.5s para não deixar o cliente esperando se a internet falhar
       const timeout = new Promise((_, reject) => 
-          setTimeout(() => reject(new Error("Timeout")), 2000)
+          setTimeout(() => reject(new Error("Timeout")), 3500)
       );
 
-      // Tenta buscar no Firebase
+      // Tenta buscar o total de pedidos no Firebase
       const fetchOrder = async () => {
-          if (db && user) {
-              const colRef = collection(db, 'artifacts', appId, 'public', 'data', 'orders');
-              const snapshot = await getDocs(colRef);
-              return (snapshot.size + 1).toString().padStart(2, '0');
-          }
-          throw new Error("No DB");
+          if (!db || !user) throw new Error("Sem conexão DB");
+          
+          const colRef = collection(db, 'artifacts', appId, 'public', 'data', 'orders');
+          // Pega todos os documentos para contar (Simples e eficaz para volume médio)
+          const snapshot = await getDocs(colRef);
+          
+          // O próximo número é o total atual + 1
+          const nextNum = snapshot.size + 1;
+          return nextNum.toString().padStart(2, '0'); // Garante formato "01", "02"
       };
 
       try {
-          // Corrida entre buscar o número e o timeout de 2s
+          // Tenta pegar o número global. Se demorar, cai no catch.
           return await Promise.race([fetchOrder(), timeout]);
       } catch (e) {
-          // Se der erro ou demorar muito, usa local storage (Fallback)
-          console.log("Usando numeração local (fallback)");
+          console.log("Usando numeração local (fallback) devido a:", e.message);
+          // Fallback: Usa memória do celular se a internet falhar
           let count = parseInt(localStorage.getItem('localOrderCount') || '0') + 1;
           localStorage.setItem('localOrderCount', count);
-          return count.toString().padStart(2, '0') + " (Offline)";
+          return count.toString().padStart(2, '0');
       }
   }
 
@@ -1689,14 +1692,13 @@
     }
   });
 
-  // FUNÇÃO DE ENVIO OTIMIZADA (SEM TRAVAMENTOS)
+  // FUNÇÃO DE ENVIO OTIMIZADA
   async function sendOrder() {
     // --- TRAVA DE LOJA FECHADA ---
     if (!appConfig.isOpenManually) {
         alert("🔒 LOJA FECHADA NO MOMENTO\n\nAgradecemos a preferência, mas agora não estamos a receber pedidos.\n\n🕒 Nossos Horários:\n🍗 Galetos: Sáb e Dom (09h às 15h)\n🥔 Batatas: Qua a Dom (18h às 22h)\n\nPor favor, volte em breve! 🧡");
-        return; // Para a execução aqui
+        return; 
     }
-    // -----------------------------
 
     const name = document.getElementById('clientName').value;
     const phone = document.getElementById('clientPhone').value;
@@ -1715,14 +1717,18 @@
 
     const btn = document.querySelector('.modal-footer .btn-primary');
     const originalText = btn.innerText;
-    btn.innerText = "Abrindo WhatsApp..."; 
-    // Não desabilitamos o botão imediatamente para garantir o evento de clique do mobile
+    
+    // Feedback visual
+    btn.innerText = "Gerando Pedido #..."; 
+    btn.disabled = true;
 
-    // 1. Geração INSTANTÂNEA do número (baseada no histórico local para velocidade)
-    // Se o Firebase estiver lento, isso garante que o cliente não fique esperando.
-    let localCount = parseInt(localStorage.getItem('localOrderCount') || '0');
-    let orderNum = (localCount + 1).toString().padStart(2, '0');
-    localStorage.setItem('localOrderCount', localCount + 1);
+    // 1. Geração DO NÚMERO SEQUENCIAL (Aguarda o DB)
+    let orderNum;
+    try {
+        orderNum = await getNextOrderNumber();
+    } catch (e) {
+        orderNum = "??"; // Caso extremo
+    }
 
     // 2. Montagem da Mensagem
     let itemsList = "";
@@ -1737,6 +1743,15 @@
 
     const total = getCartTotal() + getExtrasTotal() + deliveryVal;
     
+    // Lógica Melhorada de Pagamento (Adiciona "Cobrar" para Dinheiro/Cartão)
+    let pagamentoTexto = payment;
+    if (payment === 'Dinheiro' || payment === 'Cartão') {
+        pagamentoTexto += ` (Cobrar: ${formatMoney(total)})`;
+    }
+    if (payment === 'Dinheiro' && change) {
+        pagamentoTexto += ` (Troco para: ${change})`;
+    }
+
     let msg = `*PEDIDO #${orderNum} - Galeteria Pais e Filhos* 🍗\n`;
     msg += `👤 *Cliente:* ${name}\n📞 *Tel:* ${phone}\n\n`;
     msg += `🛒 *ITENS:*\n`;
@@ -1750,7 +1765,8 @@
       msg += `\n`;
     }
     msg += `\n💸 *Total:* ${formatMoney(total)}\n`;
-    msg += `💳 *Pag:* ${payment} ${payment === 'Dinheiro' && change ? '(Troco: ' + change + ')' : ''}\n`;
+    // Usa o texto detalhado com "Cobrar"
+    msg += `💳 *Pag:* ${pagamentoTexto}\n`;
     
     if (deliveryVal > 0) {
         let bairroNome = deliveryText.split('(')[0].trim();
@@ -1763,41 +1779,41 @@
     if (obs) msg += `📝 *Obs:* ${obs}\n`;
 
     // 3. ABERTURA IMEDIATA DO WHATSAPP (Prioridade Total)
-    // Isso acontece ANTES de tentar salvar qualquer coisa no banco de dados
     const waLink = `https://wa.me/${WHATSAPP}?text=${encodeURIComponent(msg)}`;
     window.open(waLink, '_blank');
 
     // 4. Salva os dados em "Segundo Plano" (Fire and Forget)
-    // O cliente já foi pro WhatsApp, mas o sistema salva aqui
     const orderData = {
         numero: orderNum,
         data: new Date().toLocaleString('pt-BR'),
         cliente: name,
         telefone: phone,
         valor: total,
-        pagamento: payment + (payment === 'Dinheiro' && change ? ` (Troco: ${change})` : ''),
+        pagamento: pagamentoTexto,
         endereco: address || "Retirada",
         bairro: deliveryText,
         detalhes: itemsList,
         entrega: deliveryVal
     };
 
-    // Salvar na Planilha
+    // Salvar no Firebase (Histórico)
+    saveOrderToFirebase(orderData).catch(e => console.log("Erro Firebase:", e));
+
+    // Salvar na Planilha (Google Sheets)
     if (APPS_SCRIPT_URL) {
         fetch(APPS_SCRIPT_URL, {
             method: 'POST', mode: 'no-cors',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(orderData)
-        }).catch(e => console.log("Erro planilha (não bloqueante):", e));
+        }).catch(e => console.log("Erro planilha:", e));
     }
-
-    // Salvar no Firebase
-    saveOrderToFirebase(orderData).catch(e => console.log("Erro Firebase (não bloqueante):", e));
 
     // Resetar UI
     setTimeout(() => {
         btn.innerText = originalText;
+        btn.disabled = false;
         window.closeModal();
+        window.clearCart(); // Opcional: limpar carrinho após sucesso
     }, 1000);
   }
 
