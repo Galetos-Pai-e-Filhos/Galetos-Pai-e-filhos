@@ -700,13 +700,6 @@
               <span id="labelGaletoHours">Sábados e Domingos: 09h às 15h</span>
             </div>
           </div>
-          <div class="hours-row">
-            <span class="hours-icon">🥔</span>
-            <div class="hours-info">
-              <strong>Batatas Recheadas</strong>
-              <span id="labelBatataHours">Qua a Dom: 18h às 22h</span>
-            </div>
-          </div>
         </div>
 
         <div style="display: flex; gap: 12px; margin-top: 10px;">
@@ -992,6 +985,13 @@
   window.explodeEmojis = explodeEmojis;
   window.copyPix = copyPix;
 
+  // --- UI HELPERS (FORMATO MANUAL PARA EVITAR BUG R$,00) ---
+  function formatMoney(v) { 
+      if(v === null || v === undefined || isNaN(v)) return "R$ 0,00";
+      // Força formato manual para garantir compatibilidade
+      return "R$ " + parseFloat(v).toFixed(2).replace('.', ','); 
+  }
+
   // --- FUNÇÃO PARA GERAR NÚMERO DO PEDIDO (GLOBAL E SEQUENCIAL) ---
   async function getNextOrderNumber() {
       // Timeout de 3.5s para não deixar o cliente esperando se a internet falhar
@@ -1222,8 +1222,8 @@
     try {
         appConfig.hours.galeto.start = parseInt(document.getElementById('adminGaletoStart').value);
         appConfig.hours.galeto.end = parseInt(document.getElementById('adminGaletoEnd').value);
-        appConfig.hours.batata.start = parseInt(document.getElementById('adminBatataStart').value);
-        appConfig.hours.batata.end = parseInt(document.getElementById('adminBatataEnd').value);
+        
+        // Removed Batata hours save logic as requested
         
         // Ler zonas de entrega dinâmicas
         const zoneInputs = document.querySelectorAll('.zone-input-group');
@@ -1361,13 +1361,6 @@
               <span style="color:#666">-</span>
               <input type="number" id="adminGaletoEnd" class="admin-input-sm" value="${appConfig.hours.galeto.end}">
             </div>
-
-            <div class="admin-input-row">
-              <div class="admin-label-sm">🥔 Batata (Qua-Dom)</div>
-              <input type="number" id="adminBatataStart" class="admin-input-sm" value="${appConfig.hours.batata.start}">
-              <span style="color:#666">-</span>
-              <input type="number" id="adminBatataEnd" class="admin-input-sm" value="${appConfig.hours.batata.end}">
-            </div>
           </div>
 
           <!-- Card Taxas -->
@@ -1419,8 +1412,6 @@
   }
 
   // --- UI HELPERS ---
-  function formatMoney(v) { return v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }); }
-
   function checkOpenStatus() {
     const now = new Date();
     const day = now.getDay(); // 0=Dom, 1=Seg, ..., 6=Sáb
@@ -1431,11 +1422,8 @@
 
     // Dias de funcionamento
     const isWeekend = (day === 0 || day === 6); // Sáb e Dom
-    // Batata: Quarta(3), Quinta(4), Sexta(5), Sábado(6), Domingo(0)
-    const isBatataDay = (day >= 3 || day === 0);
 
     const galetoOpen = isWeekend && (hour >= appConfig.hours.galeto.start && hour < appConfig.hours.galeto.end);
-    const batataOpen = isBatataDay && (hour >= appConfig.hours.batata.start && hour < appConfig.hours.batata.end);
 
     // Nova Lógica Simplificada: Se Manual está ON, abre. Se OFF, fecha.
     if (appConfig.isOpenManually) {
@@ -1443,7 +1431,6 @@
         statusClass = "open";
         // Tenta ser específico se possível
         if (galetoOpen) statusText = "Aberto (Galetos)";
-        else if (batataOpen) statusText = "Aberto (Batatas)";
         else statusText = "Aberto (Extra)";
     } else {
         statusText = "Fechado";
@@ -1457,7 +1444,6 @@
     }
 
     document.getElementById('labelGaletoHours').textContent = `Sábados e Domingos: ${appConfig.hours.galeto.start}h às ${appConfig.hours.galeto.end}h`;
-    document.getElementById('labelBatataHours').textContent = `Qua a Dom: ${appConfig.hours.batata.start}h às ${appConfig.hours.batata.end}h`;
   }
 
   function updateDeliveryOptions() {
@@ -1641,6 +1627,9 @@
     }
     for (const [id, qty] of Object.entries(cart)) {
       const p = products.find(x => x.id == id);
+      
+      // Correção: Removida a linha 'msg +=' que causava o erro aqui
+      
       html += `
         <div class="cart-item">
           <div style="font-size:24px;">${p.img}</div>
@@ -1696,7 +1685,7 @@
   async function sendOrder() {
     // --- TRAVA DE LOJA FECHADA ---
     if (!appConfig.isOpenManually) {
-        alert("🔒 LOJA FECHADA NO MOMENTO\n\nAgradecemos a preferência, mas agora não estamos a receber pedidos.\n\n🕒 Nossos Horários:\n🍗 Galetos: Sáb e Dom (09h às 15h)\n🥔 Batatas: Qua a Dom (18h às 22h)\n\nPor favor, volte em breve! 🧡");
+        alert("🔒 LOJA FECHADA NO MOMENTO\n\nAgradecemos a preferência, mas agora não estamos a receber pedidos.\n\n🕒 Nossos Horários:\n🍗 Galetos: Sáb e Dom (09h às 15h)\n\nPor favor, volte em breve! 🧡");
         return; 
     }
 
@@ -1734,7 +1723,9 @@
     let itemsList = "";
     for (const [id, qty] of Object.entries(cart)) {
       const p = products.find(x => x.id == id);
-      itemsList += `${qty}x ${p.name}, `;
+      if(p) {
+          itemsList += `${qty}x ${p.name}, `;
+      }
     }
     if (selectedExtras.size > 0) {
       itemsList += "Extras: ";
@@ -1744,14 +1735,12 @@
     const total = getCartTotal() + getExtrasTotal() + deliveryVal;
     
     // Lógica de Pagamento Ajustada (Valor aparece para TODOS: Pix, Dinheiro e Cartão)
-    let pagamentoTexto = payment;
-    
-    // Adiciona o valor total formatado para todas as formas de pagamento
-    pagamentoTexto += ` (Valor: ${formatMoney(total)})`;
+    // Ex: "Pix R$ 50,00" ou "Dinheiro R$ 34,00 (Troco: 50,00)"
+    let pagamentoTexto = `${payment} ${formatMoney(total)}`;
 
     // Se for dinheiro e tiver troco, adiciona a informação
     if (payment === 'Dinheiro' && change) {
-        pagamentoTexto += ` (Troco para: ${change})`;
+        pagamentoTexto += ` (Troco: ${change})`;
     }
 
     let msg = `*PEDIDO #${orderNum} - Galeteria Pais e Filhos* 🍗\n`;
@@ -1759,7 +1748,9 @@
     msg += `🛒 *ITENS:*\n`;
     for (const [id, qty] of Object.entries(cart)) {
       const p = products.find(x => x.id == id);
-      msg += `${qty}x ${p.name} - ${formatMoney(p.price * qty)}\n`;
+      if(p) {
+          msg += `${qty}x ${p.name} - ${formatMoney(p.price * qty)}\n`;
+      }
     }
     if (selectedExtras.size > 0) {
       msg += `\n➕ *Extras:* `;
@@ -1767,7 +1758,7 @@
       msg += `\n`;
     }
     msg += `\n💸 *Total:* ${formatMoney(total)}\n`;
-    // Usa o texto detalhado com "Cobrar"
+    // Usa o texto detalhado com o valor explícito
     msg += `💳 *Pag:* ${pagamentoTexto}\n`;
     
     if (deliveryVal > 0) {
