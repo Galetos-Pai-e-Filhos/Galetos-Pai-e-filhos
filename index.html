@@ -251,7 +251,7 @@
         z-index: 200; display: none; place-items: center; opacity: 0; transition: opacity 0.3s; 
     }
     .modal-overlay.open { 
-        display: flex; /* CORREÇÃO AQUI */
+        display: flex; 
         opacity: 1; 
     }
     .modal-card {
@@ -282,8 +282,16 @@
     .switch input { opacity: 0; width: 0; height: 0; }
     .slider { position: absolute; inset: 0; background: #333; border-radius: 20px; transition: .4s; }
     .slider:before { content: ""; position: absolute; height: 16px; width: 16px; left: 2px; bottom: 2px; background: #fff; border-radius: 50%; transition: .4s; }
-    input:checked + .slider { background: var(--success); }
-    input:checked + .slider:before { transform: translateX(20px); }
+    
+    /* Cores dos Sliders */
+    #admOpen:checked + .slider { background: var(--success); }
+    #admOpen:checked + .slider:before { transform: translateX(20px); }
+
+    #admClose:checked + .slider { background: var(--danger); }
+    #admClose:checked + .slider:before { transform: translateX(20px); }
+
+    #admStockSwitch:checked + .slider { background: var(--success); }
+    #admStockSwitch:checked + .slider:before { transform: translateX(20px); }
 
     .order-item-admin { background: #222; padding: 10px; border-radius: 8px; margin-bottom: 10px; border: 1px solid var(--border); font-size: 13px; }
 
@@ -500,11 +508,16 @@
             <!-- Tab Config -->
             <div id="adm-config" class="admin-section active">
                 <div class="admin-row">
-                    <span>Loja Aberta? (Forçar)</span>
+                    <span>Forçar Loja Aberta</span>
                     <label class="switch"><input type="checkbox" id="admOpen"><span class="slider"></span></label>
                 </div>
-                <div style="font-size:11px; color:#aaa; margin-top:-5px; margin-bottom:15px;">
-                    Se desligado, a loja abre/fecha automaticamente pelo horário. Se ligado, força abertura.
+                <div class="admin-row">
+                    <span>Forçar Loja Fechada (Emergência)</span>
+                    <label class="switch"><input type="checkbox" id="admClose"><span class="slider"></span></label>
+                </div>
+                <div style="font-size:11px; color:#aaa; margin-top:-5px; margin-bottom:15px; padding:0 10px;">
+                    Se ambos desligados: Automático (09h-15h Sáb/Dom).<br>
+                    "Forçar Fechada" tem prioridade sobre tudo.
                 </div>
                 
                 <h4 style="color:#aaa; font-size:12px; margin-top:20px;">BAIRROS E TAXAS</h4>
@@ -566,7 +579,8 @@
 
   const extras = [];
 
-  let appConfig = { isOpenManually: true, deliveryZones: [], hours: { galeto: { start: 9, end: 15 } }, stock: {} };
+  // Default config: auto=true, manualOpen=false, manualClose=false
+  let appConfig = { isOpenManually: false, isClosedManually: false, deliveryZones: [], hours: { galeto: { start: 9, end: 15 } }, stock: {} };
   let cart = {}; 
   window.activeCat = 'todos';
 
@@ -629,13 +643,19 @@
 
   window.saveAdmin = async () => {
       const btn = event.target; btn.innerText = "...";
+      // Guarda os 2 switches
       appConfig.isOpenManually = document.getElementById('admOpen').checked;
+      appConfig.isClosedManually = document.getElementById('admClose').checked;
+      
       products.forEach(p => {
           const el = document.getElementById('stk_'+p.id);
           if(el) appConfig.stock[p.id] = el.checked;
       });
       await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'config', 'store_settings'), appConfig);
       btn.innerText = "Salvo!"; setTimeout(()=>btn.innerText="💾 Salvar Tudo", 2000);
+      
+      // Atualiza UI imediata
+      checkOpenStatus();
   };
 
   window.loadOrders = async () => {
@@ -655,7 +675,10 @@
   };
 
   function renderAdmin() {
-      document.getElementById('admOpen').checked = appConfig.isOpenManually;
+      // Define o estado dos 2 switches
+      document.getElementById('admOpen').checked = appConfig.isOpenManually || false;
+      document.getElementById('admClose').checked = appConfig.isClosedManually || false;
+      
       const zBox = document.getElementById('admZones');
       zBox.innerHTML = (appConfig.deliveryZones||[]).map((z,i) => `
         <div class="admin-row">
@@ -667,7 +690,7 @@
       sBox.innerHTML = products.map(p => `
         <div class="admin-row">
             <span style="font-size:12px;">${p.name}</span>
-            <label class="switch"><input type="checkbox" id="stk_${p.id}" ${appConfig.stock[p.id]!==false?'checked':''}><span class="slider"></span></label>
+            <label class="switch"><input type="checkbox" id="stk_${p.id}" ${appConfig.stock[p.id]!==false?'checked':''} id="admStockSwitch"><span class="slider"></span></label>
         </div>`).join('');
   }
 
@@ -717,8 +740,15 @@
     const isTime = (hour >= appConfig.hours.galeto.start && hour < appConfig.hours.galeto.end);
     const autoOpen = isWeekend && isTime;
 
-    // A loja abre se for automático OU se o botão manual estiver ligado
-    return appConfig.isOpenManually || autoOpen;
+    // Lógica de Prioridade:
+    // 1. Se "Forçar Fechado" estiver ligado -> FECHADO
+    if (appConfig.isClosedManually) return false;
+    
+    // 2. Se "Forçar Aberto" estiver ligado -> ABERTO
+    if (appConfig.isOpenManually) return true;
+    
+    // 3. Senão -> AUTOMÁTICO
+    return autoOpen;
   }
 
   function subscribeToConfig() {
