@@ -947,47 +947,72 @@
         orderNum = "OFF"; 
     }
 
-    let itemsList = "";
+    // --- MONTAR MENSAGEM SUPER REDUZIDA ---
+    let msg = `*PEDIDO ${orderNum}*\n\n`; // Sem nome da loja, sem #
+
+    // ITENS (Só quantidade e nome)
     for (const [id, qty] of Object.entries(cart)) {
       const p = products.find(x => x.id == id);
-      if(p) itemsList += `${qty}x ${p.name}, `;
+      if(p) msg += `${qty}x ${p.name}\n`;
+    }
+    
+    // EXTRAS
+    if (selectedExtras.size > 0) {
+      msg += `+ `;
+      selectedExtras.forEach(eid => msg += `${extras.find(x=>x.id===eid).name}, `);
+      msg = msg.slice(0, -2); // Remove ultima virgula
+      msg += `\n`;
     }
 
+    msg += `\n`; // Pula linha
+
+    // ENDEREÇO (Direto: Rua - Bairro)
+    if (deliveryVal > 0) {
+        // Pega só o nome do bairro, remove "(R$ ...)"
+        let bairroLimpo = deliveryText.split('(')[0].trim();
+        msg += `${address} - ${bairroLimpo}\n`; 
+    } else {
+        msg += `Retirada no Local\n`;
+    }
+
+    msg += `\n`; // Pula linha
+
+    // PAGAMENTO E TOTAL
+    // Ex: Pix R$ 58,00
+    // Ex: Dinheiro R$ 58,00 (Troco: 10)
+    
     const total = getCartTotal() + getExtrasTotal() + deliveryVal;
     
-    let pagamentoTexto = `${payment} ${formatMoney(total)}`;
-    if (payment === 'Dinheiro' && change) pagamentoTexto += ` (Troco: ${change})`;
+    let infoPag = `${payment} ${formatMoney(total)}`;
+    if (payment === 'Dinheiro' && change) infoPag += ` (Troco: ${change})`;
+    
+    msg += `${infoPag}\n`;
 
-    let msg = `*PEDIDO #${orderNum} - Galeteria Pais e Filhos* 🍗\n`;
-    msg += `👤 *Cliente:* ${name}\n📞 *Tel:* ${phone}\n\n`;
-    msg += `🛒 *ITENS:*\n`;
-    for (const [id, qty] of Object.entries(cart)) {
-      const p = products.find(x => x.id == id);
-      if(p) msg += `${qty}x ${p.name} - ${formatMoney(p.price * qty)}\n`;
-    }
-    msg += `\n💸 *Total:* ${formatMoney(total)}\n`;
-    msg += `💳 *Pag:* ${pagamentoTexto}\n`;
+    // CLIENTE (No final, bem discreto)
+    msg += `\n${name} - ${phone}`;
     
-    if (deliveryVal > 0) {
-        let bairroNome = deliveryText.split('(')[0].trim();
-        msg += `📍 *Endereço:* ${address}\n`; 
-        msg += `🛵 *Bairro/Taxa:* ${bairroNome} (${formatMoney(deliveryVal)})\n`;
-    } else {
-        msg += `🏃 *Retirada no Local*\n`;
-    }
-    
-    if (obs) msg += `📝 *Obs:* ${obs}\n`;
+    if (obs) msg += `\n(${obs})`;
 
     // OPEN WHATSAPP IMMEDIATELY
     const waLink = `https://wa.me/${WHATSAPP}?text=${encodeURIComponent(msg)}`;
     window.open(waLink, '_blank');
 
-    // SAVE BACKGROUND
+    // SAVE BACKGROUND (Dados completos para o banco)
+    let pagamentoTexto = `${payment} ${formatMoney(total)}`;
+    if (payment === 'Dinheiro' && change) pagamentoTexto += ` (Troco: ${change})`;
+    
+    // Lista de itens completa para o banco
+    let itemsListFull = "";
+    for (const [id, qty] of Object.entries(cart)) {
+      const p = products.find(x => x.id == id);
+      if(p) itemsListFull += `${qty}x ${p.name}, `;
+    }
+
     const orderData = {
         numero: orderNum,
         data: new Date().toLocaleString('pt-BR'),
         cliente: name, telefone: phone, valor: total, pagamento: pagamentoTexto,
-        endereco: address || "Retirada", bairro: deliveryText, detalhes: itemsList, entrega: deliveryVal
+        endereco: address || "Retirada", bairro: deliveryText, detalhes: itemsListFull, entrega: deliveryVal
     };
 
     saveOrderToFirebase(orderData);
