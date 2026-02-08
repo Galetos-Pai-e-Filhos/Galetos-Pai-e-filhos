@@ -935,8 +935,14 @@
 
     const btn = document.querySelector('.modal-footer .btn-primary');
     const originalText = btn.innerText;
-    btn.innerText = "Gerando Pedido..."; // Feedback melhor
+    btn.innerText = "Enviando..."; 
     btn.disabled = true;
+
+    // --- ESTRATÉGIA ANTI-BLOQUEIO: ABRE JANELA EM BRANCO ANTES DO AWAIT ---
+    const waWindow = window.open('', '_blank');
+    if(waWindow) {
+        waWindow.document.write('<html><body style="background:#111;color:#fff;font-family:sans-serif;display:flex;justify-content:center;align-items:center;height:100vh;"><h2>A gerar pedido... Aguarde...</h2></body></html>');
+    }
 
     // --- GERAR NÚMERO GLOBAL ---
     let orderNum = "??";
@@ -993,9 +999,15 @@
     
     if (obs) msg += `\n(${obs})`;
 
-    // OPEN WHATSAPP IMMEDIATELY
+    // OPEN WHATSAPP LINK NA JANELA QUE JÁ ABRIMOS
     const waLink = `https://wa.me/${WHATSAPP}?text=${encodeURIComponent(msg)}`;
-    window.open(waLink, '_blank');
+    
+    if(waWindow) {
+        waWindow.location.href = waLink;
+    } else {
+        // Fallback se o popup tiver sido bloqueado mesmo assim
+        window.location.href = waLink;
+    }
 
     // SAVE BACKGROUND (Dados completos para o banco)
     let pagamentoTexto = `${payment} ${formatMoney(total)}`;
