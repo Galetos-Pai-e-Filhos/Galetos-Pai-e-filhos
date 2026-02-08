@@ -492,7 +492,7 @@
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
   import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-  import { getFirestore, doc, onSnapshot, setDoc, addDoc, collection } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+  import { getFirestore, doc, onSnapshot, setDoc, addDoc, collection, getDocs } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
   let firebaseConfig;
   let appId = 'galeteria-pais-filhos'; 
@@ -623,7 +623,7 @@
       t.classList.add('visible'); setTimeout(() => t.classList.remove('visible'), 2000);
   }
 
-  // --- EXPLOSÃO DE EMOJIS (Restaurada) ---
+  // --- EXPLOSÃO DE EMOJIS ---
   function explodeEmojis(x, y) {
       if (!x || !y) {
           x = window.innerWidth / 2;
@@ -676,6 +676,31 @@
         checkOpenStatus();
       }
     });
+  }
+
+  // --- BUSCAR NÚMERO GLOBAL ---
+  async function getNextOrderNumber() {
+      // Timeout de 2.5s para não travar muito tempo
+      const timeout = new Promise((_, reject) => 
+          setTimeout(() => reject(new Error("Timeout")), 2500)
+      );
+
+      const fetchOrder = async () => {
+          if (!db || !user) throw new Error("Sem conexão DB");
+          const colRef = collection(db, 'artifacts', appId, 'public', 'data', 'orders');
+          const snapshot = await getDocs(colRef);
+          return (snapshot.size + 1).toString().padStart(2, '0');
+      };
+
+      try {
+          // Tenta pegar o global. Se demorar, usa local.
+          return await Promise.race([fetchOrder(), timeout]);
+      } catch (e) {
+          console.log("Usando numeração local/fallback:", e);
+          let localCount = parseInt(localStorage.getItem('localOrderCount') || '0') + 1;
+          localStorage.setItem('localOrderCount', localCount);
+          return localCount.toString().padStart(2, '0');
+      }
   }
 
   async function saveOrderToFirebase(orderData) {
@@ -910,12 +935,17 @@
 
     const btn = document.querySelector('.modal-footer .btn-primary');
     const originalText = btn.innerText;
-    btn.innerText = "Enviando..."; btn.disabled = true;
+    btn.innerText = "Gerando Pedido..."; // Feedback melhor
+    btn.disabled = true;
 
-    // LOCAL ORDER NUMBER (FASTEST)
-    let localCount = parseInt(localStorage.getItem('localOrderCount') || '0');
-    let orderNum = (localCount + 1).toString().padStart(2, '0');
-    localStorage.setItem('localOrderCount', localCount + 1);
+    // --- GERAR NÚMERO GLOBAL ---
+    let orderNum = "??";
+    try {
+        orderNum = await getNextOrderNumber();
+    } catch(e) {
+        // Fallback já tratado na função, mas segurança extra
+        orderNum = "OFF"; 
+    }
 
     let itemsList = "";
     for (const [id, qty] of Object.entries(cart)) {
