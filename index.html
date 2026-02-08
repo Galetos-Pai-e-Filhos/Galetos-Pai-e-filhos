@@ -7,36 +7,26 @@
   <title>Galeteria Pais e Filhos | Premium Delivery</title>
   <meta name="description" content="O melhor galeto da cidade. Peça online." />
 
-  <!-- Icone da aba usando sua logo -->
   <link rel="icon" href="logo.jpeg" type="image/jpeg" />
-
-  <!-- Fonte Inter para um visual mais técnico e limpo -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
   <style>
     :root{
-      /* Cores Base */
-      --bg: #0a0a0a;
+      var(--bg): #0a0a0a;
       --surface: #18181b;
       --surface-glass: rgba(30, 30, 35, 0.7);
       --text: #ffffff;
       --text-sec: #a1a1aa;
       --border: rgba(255,255,255,0.08);
-      
-      /* Marca - Ajustada para combinar com a logo Pais e Filhos (Amarelo/Vermelho) */
       --brand: #FFC107;        
       --brand-gradient: linear-gradient(135deg, #FFC107 0%, #FF8F00 100%);
       --brand-glow: rgba(255, 193, 7, 0.25);
-      
-      /* Utilitários */
       --success: #10B981;
       --danger: #EF4444;
       --radius: 16px;
       --shadow: 0 10px 30px -10px rgba(0,0,0,0.6);
-      
-      /* Animações */
       --ease: cubic-bezier(0.25, 0.8, 0.25, 1);
     }
 
@@ -45,20 +35,19 @@
     body {
       margin: 0;
       font-family: 'Inter', system-ui, -apple-system, sans-serif;
-      background-color: var(--bg);
-      color: var(--text);
-      /* Fundo sutil premium */
+      background-color: #0a0a0a;
+      color: #ffffff;
       background-image: 
         radial-gradient(circle at 100% 0%, rgba(255,193,7,0.06) 0%, transparent 40%),
         radial-gradient(circle at 0% 100%, rgba(255,193,7,0.03) 0%, transparent 40%);
       min-height: 100vh;
-      padding-bottom: 100px; /* Ajuste para o footer não ficar escondido pelo float cart */
+      padding-bottom: 100px;
       overflow-x: hidden;
     }
 
     /* Scrollbar */
     ::-webkit-scrollbar { width: 6px; }
-    ::-webkit-scrollbar-track { background: var(--bg); }
+    ::-webkit-scrollbar-track { background: #0a0a0a; }
     ::-webkit-scrollbar-thumb { background: #333; border-radius: 10px; }
 
     .wrap { max-width: 1000px; margin: 0 auto; padding: 0 20px; }
@@ -75,18 +64,16 @@
       100% { box-shadow: 0 0 0 0 rgba(37, 211, 102, 0); }
     }
 
-    @keyframes float {
-      0% { transform: translateY(0px) rotateY(-5deg); }
-      50% { transform: translateY(-10px) rotateY(-5deg); }
-      100% { transform: translateY(0px) rotateY(-5deg); }
+    @keyframes firePulse {
+      0% { transform: scale(1) rotate(0deg); filter: drop-shadow(0 0 0 rgba(255, 100, 0, 0)); }
+      50% { transform: scale(1.3) rotate(-5deg); filter: drop-shadow(0 0 8px rgba(255, 69, 0, 0.8)); }
+      100% { transform: scale(1) rotate(0deg); filter: drop-shadow(0 0 0 rgba(255, 100, 0, 0)); }
     }
+    .fire-icon { display: inline-block; animation: firePulse 1.5s infinite ease-in-out; }
 
     /* Animação de Explosão de Emojis */
     .emoji-particle {
-      position: fixed;
-      pointer-events: none;
-      font-size: 24px;
-      z-index: 9999;
+      position: fixed; pointer-events: none; font-size: 24px; z-index: 9999;
       animation: flyOut 1s forwards cubic-bezier(0.25, 0.46, 0.45, 0.94);
     }
     @keyframes flyOut {
@@ -94,24 +81,12 @@
       100% { transform: translate(var(--tx), var(--ty)) scale(1.5) rotate(var(--rot)); opacity: 0; }
     }
 
-    /* Animação do Foguinho */
-    @keyframes firePulse {
-      0% { transform: scale(1) rotate(0deg); filter: drop-shadow(0 0 0 rgba(255, 100, 0, 0)); }
-      50% { transform: scale(1.3) rotate(-5deg); filter: drop-shadow(0 0 8px rgba(255, 69, 0, 0.8)); }
-      100% { transform: scale(1) rotate(0deg); filter: drop-shadow(0 0 0 rgba(255, 100, 0, 0)); }
-    }
-    .fire-icon {
-      display: inline-block;
-      animation: firePulse 1.5s infinite ease-in-out;
-    }
-
     /* --- TOPBAR --- */
     .topbar {
       position: sticky; top: 0; z-index: 50;
       background: rgba(10, 10, 10, 0.85);
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
-      border-bottom: 1px solid var(--border);
+      backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+      border-bottom: 1px solid rgba(255,255,255,0.08);
       padding: 12px 0;
       transition: all 0.3s ease;
       animation: fadeInUp 0.6s ease-out backwards;
@@ -120,555 +95,243 @@
     
     .brand { display: flex; align-items: center; gap: 14px; }
     
-    /* Área da Logo */
     .brand-icon {
-      width: 50px; height: 50px;
-      background: transparent;
-      border-radius: 50%;
-      display: grid; place-items: center;
-      overflow: hidden;
-      box-shadow: 0 0 15px var(--brand-glow);
+      width: 50px; height: 50px; background: transparent; border-radius: 50%;
+      display: grid; place-items: center; overflow: hidden;
+      box-shadow: 0 0 15px rgba(255, 193, 7, 0.25);
       border: 1px solid rgba(255,255,255,0.1);
-      transition: transform 0.3s var(--ease);
-      cursor: pointer;
-      position: relative;
-      z-index: 60;
+      position: relative; z-index: 60;
     }
-    .brand-icon:hover { transform: scale(1.05); border-color: var(--brand); }
-    .brand-icon:active { transform: scale(0.95); }
     .brand-icon img { width: 100%; height: 100%; object-fit: cover; pointer-events: none; }
 
     .brand-text h1 { font-size: 16px; font-weight: 700; margin: 0; line-height: 1.2; letter-spacing: -0.01em; color: #fff; }
-    .brand-text span { font-size: 11px; color: var(--brand); font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; }
+    .brand-text span { font-size: 11px; color: #FFC107; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; }
 
     .status-chip {
-      background: rgba(255,255,255,0.03);
-      color: var(--text-sec);
-      border: 1px solid var(--border);
-      padding: 6px 12px;
-      border-radius: 100px;
-      font-size: 11px;
-      font-weight: 600;
-      display: flex; align-items: center; gap: 8px;
-      white-space: nowrap;
-      transition: all 0.3s ease;
+      background: rgba(255,255,255,0.03); color: #a1a1aa; border: 1px solid rgba(255,255,255,0.08);
+      padding: 6px 12px; border-radius: 100px; font-size: 11px; font-weight: 600;
+      display: flex; align-items: center; gap: 8px; white-space: nowrap;
     }
-    .status-chip.open { background: rgba(16, 185, 129, 0.1); color: var(--success); border-color: rgba(16, 185, 129, 0.2); }
-    .status-chip.closed { background: rgba(239, 68, 68, 0.1); color: var(--danger); border-color: rgba(239, 68, 68, 0.2); }
+    .status-chip.open { background: rgba(16, 185, 129, 0.1); color: #10B981; border-color: rgba(16, 185, 129, 0.2); }
+    .status-chip.closed { background: rgba(239, 68, 68, 0.1); color: #EF4444; border-color: rgba(239, 68, 68, 0.2); }
     .status-dot { width: 6px; height: 6px; background: currentColor; border-radius: 50%; box-shadow: 0 0 8px currentColor; }
 
     /* --- HERO --- */
-    .hero {
-      margin-top: 32px;
-      display: grid; grid-template-columns: 1fr 0.8fr; gap: 40px; align-items: center;
-    }
-    .hero-content {
-      animation: fadeInUp 0.8s ease-out 0.2s backwards;
-    }
+    .hero { margin-top: 32px; display: grid; grid-template-columns: 1fr 0.8fr; gap: 40px; align-items: center; }
+    .hero-content { animation: fadeInUp 0.8s ease-out 0.2s backwards; }
     .hero-content h2 {
-      font-size: 40px; line-height: 1.1; font-weight: 800; margin: 0 0 16px;
-      letter-spacing: -0.02em;
-      background: linear-gradient(to right, #fff, #ccc);
-      background-clip: text; -webkit-background-clip: text; color: transparent;
+      font-size: 40px; line-height: 1.1; font-weight: 800; margin: 0 0 16px; letter-spacing: -0.02em;
+      background: linear-gradient(to right, #fff, #ccc); -webkit-background-clip: text; color: transparent;
     }
-    .hero-content p { font-size: 16px; color: var(--text-sec); line-height: 1.6; margin: 0 0 24px; max-width: 95%; }
+    .hero-content p { font-size: 16px; color: #a1a1aa; line-height: 1.6; margin: 0 0 24px; max-width: 95%; }
     
     .hero-badges { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 24px; }
     .badge {
       padding: 6px 12px; background: rgba(255,255,255,0.05); border-radius: 8px;
-      font-size: 12px; font-weight: 500; color: var(--text-sec);
-      border: 1px solid var(--border);
+      font-size: 12px; font-weight: 500; color: #a1a1aa; border: 1px solid rgba(255,255,255,0.08);
     }
 
-    /* Info Card Horários */
     .hours-card {
-        background: rgba(255,255,255,0.02);
-        border: 1px solid var(--border);
-        border-radius: var(--radius);
-        padding: 16px;
-        margin-bottom: 24px;
-        display: flex;
-        flex-direction: column;
-        gap: 12px;
+        background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.08);
+        border-radius: 16px; padding: 16px; margin-bottom: 24px; display: flex; flex-direction: column; gap: 12px;
     }
     .hours-row { display: flex; align-items: flex-start; gap: 12px; }
     .hours-icon { font-size: 18px; padding-top: 2px; }
-    .hours-info strong { display: block; color: var(--brand); font-size: 14px; margin-bottom: 2px; }
-    .hours-info span { display: block; color: var(--text-sec); font-size: 13px; line-height: 1.4; }
+    .hours-info strong { display: block; color: #FFC107; font-size: 14px; margin-bottom: 2px; }
+    .hours-info span { display: block; color: #a1a1aa; font-size: 13px; line-height: 1.4; }
 
     .btn {
-      border: none; outline: none; cursor: pointer;
-      padding: 14px 24px; border-radius: 12px;
-      font-weight: 700; font-size: 14px;
-      transition: all 0.2s var(--ease);
-      display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+      border: none; outline: none; cursor: pointer; padding: 14px 24px; border-radius: 12px;
+      font-weight: 700; font-size: 14px; transition: all 0.2s; display: inline-flex; align-items: center; justify-content: center; gap: 8px;
     }
     .btn-primary {
-      background: var(--brand-gradient);
-      color: #000;
-      box-shadow: 0 8px 20px -4px var(--brand-glow);
+      background: linear-gradient(135deg, #FFC107 0%, #FF8F00 100%); color: #000;
+      box-shadow: 0 8px 20px -4px rgba(255, 193, 7, 0.25);
     }
     .btn-primary:hover { filter: brightness(1.1); transform: translateY(-2px); }
-    .btn-primary:active { transform: scale(0.96); }
-    .btn-primary:disabled { opacity: 0.7; cursor: not-allowed; filter: grayscale(1); }
-    
-    .btn-sec { background: rgba(255,255,255,0.05); color: var(--text); border: 1px solid var(--border); }
-    .btn-sec:hover { background: rgba(255,255,255,0.1); }
+    .btn-sec { background: rgba(255,255,255,0.05); color: #fff; border: 1px solid rgba(255,255,255,0.08); }
 
-    /* Hero Visual */
     .hero-visual { 
       position: relative; perspective: 1000px; display: flex; justify-content: center; 
       animation: fadeInUp 0.8s ease-out 0.4s backwards;
     }
     .promo-frame {
-      position: relative; width: 100%; max-width: 320px;
-      border-radius: 24px; padding: 10px;
-      background: rgba(255,255,255,0.03);
-      border: 1px solid rgba(255,255,255,0.08);
-      box-shadow: 0 30px 60px -20px rgba(0,0,0,0.8);
-      transform: translateY(0px) rotateY(-5deg); 
-      animation: float 6s ease-in-out infinite; /* Efeito Flutuante */
+      position: relative; width: 100%; max-width: 320px; border-radius: 24px; padding: 10px;
+      background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08);
+      box-shadow: 0 30px 60px -20px rgba(0,0,0,0.8); transform: translateY(0px) rotateY(-5deg); 
+      animation: float 6s ease-in-out infinite;
     }
-    .promo-frame:hover { animation-play-state: paused; transform: rotateY(0) scale(1.02); }
+    @keyframes float {
+      0% { transform: translateY(0px) rotateY(-5deg); }
+      50% { transform: translateY(-10px) rotateY(-5deg); }
+      100% { transform: translateY(0px) rotateY(-5deg); }
+    }
     .promo-img { width: 100%; display: block; border-radius: 18px; }
     .promo-badge-float {
-        position: absolute; top: -10px; right: -10px;
-        background: var(--brand-gradient); color: #000; font-weight: 800;
-        padding: 8px 16px; border-radius: 50px; font-size: 13px;
+        position: absolute; top: -10px; right: -10px; background: linear-gradient(135deg, #FFC107 0%, #FF8F00 100%);
+        color: #000; font-weight: 800; padding: 8px 16px; border-radius: 50px; font-size: 13px;
         box-shadow: 0 10px 20px rgba(0,0,0,0.4); transform: rotate(8deg); z-index: 2;
     }
 
     /* --- MENU --- */
     .section-title { 
-      font-size: 22px; font-weight: 700; margin: 50px 0 24px; 
-      display: flex; align-items: center; gap: 12px; 
-      color: var(--text);
+      font-size: 22px; font-weight: 700; margin: 50px 0 24px; display: flex; align-items: center; gap: 12px; color: #fff;
       animation: fadeInUp 0.8s ease-out 0.5s backwards;
     }
-    .section-title::after { content:""; height: 1px; flex: 1; background: var(--border); }
+    .section-title::after { content:""; height: 1px; flex: 1; background: rgba(255,255,255,0.08); }
 
-    .search-wrapper { position: relative; margin-bottom: 24px; animation: fadeInUp 0.8s ease-out 0.6s backwards; }
-    .search-input {
-      width: 100%; background: var(--surface); border: 1px solid var(--border);
-      padding: 14px 14px 14px 48px; border-radius: 14px;
-      color: var(--text); font-size: 15px; transition: all 0.2s;
-    }
-    .search-input:focus { border-color: var(--brand); outline: none; box-shadow: 0 0 0 2px rgba(255,193,7,0.1); }
-    .search-input::placeholder { color: rgba(255,255,255,0.3); }
-    .search-icon { position: absolute; left: 18px; top: 50%; transform: translateY(-50%); color: var(--text-sec); opacity: 0.7; }
-
-    /* Categories - Sticky */
     .cat-container {
-      position: sticky; top: 75px; z-index: 40; /* Sticky abaixo da topbar */
-      background: var(--bg); /* Fundo opaco para cobrir itens ao rolar */
-      margin: 0 -20px; padding: 10px 20px; /* Margem negativa para full-width */
-      border-bottom: 1px solid var(--border);
-      animation: fadeInUp 0.8s ease-out 0.7s backwards;
+      position: sticky; top: 75px; z-index: 40; background: #0a0a0a; margin: 0 -20px; padding: 10px 20px;
+      border-bottom: 1px solid rgba(255,255,255,0.08); animation: fadeInUp 0.8s ease-out 0.7s backwards;
     }
-    .cat-scroll {
-      display: flex; gap: 10px; overflow-x: auto; 
-      padding-bottom: 5px; /* Ajuste visual */
-      scrollbar-width: none;
+    .search-wrapper { position: relative; margin-bottom: 12px; }
+    .search-input {
+      width: 100%; background: #18181b; border: 1px solid rgba(255,255,255,0.08); padding: 14px 14px 14px 48px;
+      border-radius: 14px; color: #fff; font-size: 15px; transition: all 0.2s;
     }
+    .search-input:focus { border-color: #FFC107; outline: none; }
+    .search-icon { position: absolute; left: 18px; top: 50%; transform: translateY(-50%); color: #a1a1aa; opacity: 0.7; }
+
+    .cat-scroll { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 5px; scrollbar-width: none; }
     .cat-scroll::-webkit-scrollbar { display: none; }
     .cat-btn {
-      background: var(--surface); border: 1px solid var(--border);
-      color: var(--text-sec); padding: 10px 20px; border-radius: 100px;
-      white-space: nowrap; cursor: pointer; font-weight: 600; font-size: 13px;
-      transition: all 0.2s;
+      background: #18181b; border: 1px solid rgba(255,255,255,0.08); color: #a1a1aa;
+      padding: 10px 20px; border-radius: 100px; white-space: nowrap; cursor: pointer; font-weight: 600; font-size: 13px;
     }
-    .cat-btn:hover { background: rgba(255,255,255,0.1); color: var(--text); }
-    .cat-btn.active { background: var(--text); color: #000; border-color: var(--text); transform: scale(1.05); }
+    .cat-btn.active { background: #fff; color: #000; border-color: #fff; transform: scale(1.05); }
 
     /* Grid */
-    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; margin-top: 24px; }
     
     .card {
-      background: var(--surface-glass);
-      border: 1px solid var(--border);
-      border-radius: var(--radius); padding: 16px;
-      transition: all 0.3s var(--ease); display: flex; flex-direction: column;
-      position: relative; overflow: hidden;
-      animation: fadeInUp 0.6s ease-out backwards; /* Base animation */
+      background: rgba(30, 30, 35, 0.7); border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 16px; padding: 16px; transition: all 0.3s; display: flex; flex-direction: column;
+      position: relative; overflow: hidden; animation: fadeInUp 0.6s ease-out backwards;
     }
-    .card:hover { 
-      transform: translateY(-4px); 
-      border-color: rgba(255,255,255,0.15); 
-      box-shadow: 0 15px 30px rgba(0,0,0,0.4); 
-      background: rgba(35, 35, 40, 0.8);
-    }
-    
     .card.disabled { opacity: 0.5; pointer-events: none; filter: grayscale(1); }
 
     .card-top { display: flex; gap: 16px; }
     .card-thumb {
       width: 72px; height: 72px; background: #222; border-radius: 14px; flex-shrink: 0;
-      display: grid; place-items: center; font-size: 32px;
-      background: radial-gradient(circle at center, #2a2a2a, #151515);
-      border: 1px solid rgba(255,255,255,0.05);
+      display: grid; place-items: center; font-size: 32px; border: 1px solid rgba(255,255,255,0.05);
     }
     .card-info { flex: 1; }
-    .card-title { font-size: 16px; font-weight: 700; margin: 0 0 6px; color: var(--text); }
-    .card-rating { font-size: 11px; color: #fbbf24; margin-bottom: 4px; display: flex; align-items: center; gap: 4px; }
-    .card-desc { 
-      font-size: 13px; color: var(--text-sec); line-height: 1.4; 
-      display: -webkit-box; -webkit-line-clamp: 2; line-clamp: 2; 
-      -webkit-box-orient: vertical; overflow: hidden; 
-    }
+    .card-title { font-size: 16px; font-weight: 700; margin: 0 0 6px; color: #fff; }
+    .card-desc { font-size: 13px; color: #a1a1aa; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
     
     .card-price-row { margin-top: 16px; display: flex; justify-content: space-between; align-items: center; }
-    .price { font-size: 17px; font-weight: 700; color: var(--brand); }
+    .price { font-size: 17px; font-weight: 700; color: #FFC107; }
     
     .add-btn {
-      background: rgba(255,255,255,0.05); color: var(--text);
-      width: 34px; height: 34px; border-radius: 10px;
-      display: grid; place-items: center; border: 1px solid var(--border);
-      cursor: pointer; transition: 0.2s; font-size: 18px;
+      background: rgba(255,255,255,0.05); color: #fff; width: 34px; height: 34px; border-radius: 10px;
+      display: grid; place-items: center; border: 1px solid rgba(255,255,255,0.08); cursor: pointer; transition: 0.2s; font-size: 18px;
     }
-    .add-btn:hover { background: var(--text); color: #000; border-color: var(--text); transform: scale(1.1); }
     .add-btn:active { transform: scale(0.9); }
 
-    .qty-controls {
-      display: flex; align-items: center; gap: 10px;
-      background: rgba(255,255,255,0.05); padding: 4px; border-radius: 10px;
-    }
-    .qty-btn { width: 26px; height: 26px; border-radius: 8px; border: none; background: #333; color: #fff; cursor: pointer; transition: 0.2s; }
-    .qty-btn:hover { background: #444; }
+    .qty-controls { display: flex; align-items: center; gap: 10px; background: rgba(255,255,255,0.05); padding: 4px; border-radius: 10px; }
+    .qty-btn { width: 26px; height: 26px; border-radius: 8px; border: none; background: #333; color: #fff; cursor: pointer; }
     .qty-val { font-weight: 700; font-size: 14px; min-width: 20px; text-align: center; }
 
+    /* Extras & Form */
     .extras-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 30px; }
+    .form-box { background: #18181b; padding: 20px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.08); }
+    .form-title { font-size: 15px; font-weight: 700; margin-bottom: 16px; display: flex; gap: 8px; color: #fff; }
     
-    .form-box { background: var(--surface); padding: 20px; border-radius: var(--radius); border: 1px solid var(--border); }
-    .form-title { font-size: 15px; font-weight: 700; margin-bottom: 16px; display: flex; gap: 8px; color: var(--text); }
-    
-    .check-item {
-      display: flex; justify-content: space-between; align-items: center;
-      padding: 12px 0; border-bottom: 1px dashed rgba(255,255,255,0.1);
-      cursor: pointer;
-    }
-    .check-item:last-child { border-bottom: none; }
+    .check-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px dashed rgba(255,255,255,0.1); cursor: pointer; }
     .check-left { display: flex; align-items: center; gap: 12px; }
-    .custom-checkbox {
-      width: 20px; height: 20px; border: 2px solid var(--text-sec); border-radius: 6px;
-      display: grid; place-items: center; transition: 0.2s;
-    }
-    input[type="checkbox"]:checked + .custom-checkbox { background: var(--brand); border-color: var(--brand); }
+    .custom-checkbox { width: 20px; height: 20px; border: 2px solid #a1a1aa; border-radius: 6px; display: grid; place-items: center; }
+    input[type="checkbox"]:checked + .custom-checkbox { background: #FFC107; border-color: #FFC107; }
     input[type="checkbox"]:checked + .custom-checkbox::after { content:"✔"; font-size: 12px; color: #000; font-weight: 900; }
     input[type="checkbox"] { display: none; } 
 
     textarea {
-      width: 100%; background: #111; border: 1px solid var(--border);
-      border-radius: 12px; padding: 14px; color: var(--text);
-      font-family: inherit; resize: vertical; min-height: 80px; transition: 0.2s;
-    }
-    textarea:focus { border-color: var(--brand); outline: none; background: #151515; }
-
-    /* Admin Styles Refined */
-    .admin-container { display: flex; flex-direction: column; gap: 16px; }
-    
-    .admin-card {
-      background: rgba(30, 30, 35, 0.6);
-      border: 1px solid rgba(255,255,255,0.08);
-      border-radius: 16px;
-      padding: 20px;
-      position: relative;
-      overflow: hidden;
-    }
-    /* Indicador colorido na esquerda do card */
-    .admin-card::before {
-        content: ""; position: absolute; top: 0; left: 0; bottom: 0; width: 4px;
-        background: var(--brand); opacity: 0.7;
-    }
-
-    .admin-header-row {
-      display: flex; justify-content: space-between; align-items: center;
-      margin-bottom: 16px; padding-bottom: 12px;
-      border-bottom: 1px solid rgba(255,255,255,0.05);
-    }
-    
-    .admin-section-title {
-      font-size: 14px; font-weight: 700; color: #fff;
-      text-transform: uppercase; letter-spacing: 0.05em;
-      display: flex; align-items: center; gap: 8px;
-    }
-
-    /* Grid de Zonas */
-    .admin-zones-grid {
-        display: grid; grid-template-columns: 1fr 1fr; gap: 12px;
-    }
-    @media(max-width: 400px) { .admin-zones-grid { grid-template-columns: 1fr; } }
-
-    .zone-item {
-        background: rgba(0,0,0,0.3); border-radius: 10px; padding: 10px;
-        border: 1px solid rgba(255,255,255,0.05);
-    }
-    .zone-label { font-size: 11px; color: var(--text-sec); margin-bottom: 4px; display: block; font-weight: 600; }
-    
-    /* Grid de Estoque */
-    .stock-grid {
-        display: grid; grid-template-columns: 1fr; gap: 8px;
-        max-height: 300px; overflow-y: auto; padding-right: 5px;
-    }
-    /* Scrollbar fina para o estoque */
-    .stock-grid::-webkit-scrollbar { width: 4px; }
-    .stock-grid::-webkit-scrollbar-thumb { background: #333; border-radius: 4px; }
-
-    .stock-item {
-        display: flex; justify-content: space-between; align-items: center;
-        padding: 12px 14px; background: rgba(255,255,255,0.03);
-        border-radius: 10px; border: 1px solid transparent;
-        transition: 0.2s;
-    }
-    .stock-item:hover { background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.1); }
-    
-    /* Inputs Admin */
-    .admin-input-row { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
-    .admin-label-sm { font-size: 12px; color: var(--text-sec); flex: 1; }
-    .admin-input-sm {
-        width: 70px; background: #0a0a0a; border: 1px solid var(--border);
-        color: #fff; padding: 8px; border-radius: 8px; text-align: center; font-weight: 600;
-    }
-
-    /* Toggle Switch Refinado */
-    .switch { position: relative; display: inline-block; width: 44px; height: 24px; flex-shrink: 0; }
-    .switch input { opacity: 0; width: 0; height: 0; }
-    .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #333; transition: .4s; border-radius: 34px; }
-    .slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 3px; bottom: 3px; background-color: #fff; transition: .4s; border-radius: 50%; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
-    input:checked + .slider { background-color: var(--success); } /* Verde para ligado */
-    input:checked + .slider:before { transform: translateX(20px); }
-
-    /* Toast (Movido para baixo e invisível por padrão) */
-    .success-msg {
-      position: fixed; 
-      bottom: 100px; /* Acima do carrinho flutuante */
-      left: 50%; 
-      transform: translateX(-50%) translateY(20px); /* Começa um pouco mais baixo */
-      opacity: 0; /* Invisível por padrão */
-      pointer-events: none; /* Não clica quando invisível */
-      
-      background: #10B981; 
-      color: #000; 
-      padding: 12px 24px; 
-      border-radius: 100px;
-      font-weight: 700; 
-      font-size: 14px; 
-      box-shadow: 0 10px 30px rgba(16, 185, 129, 0.3);
-      z-index: 300; 
-      transition: all 0.4s var(--ease);
-      display: flex; align-items: center; gap: 8px;
-    }
-    /* Quando ativo */
-    .success-msg.visible { 
-      transform: translateX(-50%) translateY(0); 
-      opacity: 1;
+      width: 100%; background: #111; border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 12px; padding: 14px; color: #fff; resize: vertical; min-height: 80px; font-family: inherit;
     }
 
     /* Cart Float */
     .cart-float {
       position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(150%);
-      width: 90%; max-width: 600px;
-      background: rgba(20, 20, 20, 0.95);
-      backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
-      border: 1px solid rgba(255,255,255,0.15);
-      padding: 10px 10px 10px 24px;
-      border-radius: 100px;
-      display: flex; justify-content: space-between; align-items: center;
-      box-shadow: 0 20px 50px rgba(0,0,0,0.7);
-      z-index: 100;
-      transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      width: 90%; max-width: 600px; background: rgba(20, 20, 20, 0.95); backdrop-filter: blur(16px);
+      border: 1px solid rgba(255,255,255,0.15); padding: 10px 10px 10px 24px; border-radius: 100px;
+      display: flex; justify-content: space-between; align-items: center; box-shadow: 0 20px 50px rgba(0,0,0,0.7);
+      z-index: 100; transition: transform 0.4s;
     }
     .cart-float.show { transform: translateX(-50%) translateY(0); }
-    .cart-summ { display: flex; flex-direction: column; }
-    .cart-label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-sec); font-weight: 600; }
-    .cart-total { font-size: 16px; font-weight: 800; color: var(--brand); }
+    .cart-total { font-size: 16px; font-weight: 800; color: #FFC107; }
     .btn-checkout {
-      background: var(--text); color: #000; padding: 12px 24px; border-radius: 100px;
-      font-weight: 700; font-size: 14px; border: none; cursor: pointer;
-      box-shadow: 0 4px 15px rgba(255,255,255,0.15); transition: 0.2s;
+      background: #fff; color: #000; padding: 12px 24px; border-radius: 100px; font-weight: 700; font-size: 14px; border: none; cursor: pointer;
     }
-    .btn-checkout:hover { transform: scale(1.05); background: var(--brand); }
 
-    /* Modal (Compartilhado entre Checkout e Admin) */
+    /* Modal */
     .modal-overlay {
       position: fixed; inset: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(8px);
       z-index: 200; display: none; place-items: center; opacity: 0; transition: opacity 0.3s;
     }
     .modal-overlay.open { opacity: 1; }
-    
     .modal-card {
-      width: 95%; max-width: 500px; max-height: 90vh;
-      background: #121212; border: 1px solid var(--border);
-      border-radius: 24px; display: flex; flex-direction: column;
-      transform: translateY(20px) scale(0.95); transition: all 0.3s var(--ease);
-      box-shadow: 0 50px 100px -20px rgba(0,0,0,0.9);
+      width: 95%; max-width: 500px; max-height: 90vh; background: #121212; border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 24px; display: flex; flex-direction: column; transform: translateY(20px) scale(0.95); transition: all 0.3s;
     }
     .modal-overlay.open .modal-card { transform: translateY(0) scale(1); }
-
-    .modal-header { padding: 20px 24px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.02); }
+    .modal-header { padding: 20px 24px; border-bottom: 1px solid rgba(255,255,255,0.08); display: flex; justify-content: space-between; align-items: center; }
     .modal-body { padding: 24px; overflow-y: auto; }
-    .modal-footer { padding: 20px 24px; border-top: 1px solid var(--border); background: rgba(255,255,255,0.02); border-radius: 0 0 24px 24px; }
-    .close-btn { background: rgba(255,255,255,0.05); border: none; width: 32px; height: 32px; border-radius: 50%; color: #fff; cursor: pointer; transition: 0.2s; }
-    .close-btn:hover { background: rgba(255,255,255,0.15); }
-    .cart-item { display: flex; gap: 12px; margin-bottom: 12px; padding-bottom: 12px; border-bottom: 1px solid var(--border); }
-    .cart-item:last-child { border-bottom: none; }
+    .modal-footer { padding: 20px 24px; border-top: 1px solid rgba(255,255,255,0.08); }
+    .close-btn { background: rgba(255,255,255,0.05); border: none; width: 32px; height: 32px; border-radius: 50%; color: #fff; cursor: pointer; }
+    .modal-input { width: 100%; background: #050505; border: 1px solid rgba(255,255,255,0.08); padding: 14px; border-radius: 12px; color: #fff; font-size: 14px; }
     .input-group { margin-bottom: 16px; }
-    .input-group label { display: block; font-size: 12px; color: var(--text-sec); margin-bottom: 6px; font-weight: 600; }
-    .modal-input { width: 100%; background: #050505; border: 1px solid var(--border); padding: 14px; border-radius: 12px; color: #fff; font-size: 14px; transition: 0.2s; }
-    .modal-input:focus { border-color: var(--brand); outline: none; }
+    .input-group label { display: block; font-size: 12px; color: #a1a1aa; margin-bottom: 6px; font-weight: 600; }
 
-    /* Footer Styles */
+    /* Footer */
     .site-footer {
-      border-top: 1px solid var(--border);
-      padding: 40px 20px 80px;
-      margin-top: 60px;
-      background: rgba(255,255,255,0.02);
+      border-top: 1px solid rgba(255,255,255,0.08); padding: 40px 20px 80px; margin-top: 60px;
       text-align: center;
     }
-    .footer-content {
-      max-width: 1000px; margin: 0 auto;
-      display: flex; flex-direction: column; gap: 20px; align-items: center;
-    }
     .footer-logo img { width: 50px; opacity: 0.8; }
-    .footer-info p { color: var(--text-sec); font-size: 13px; margin: 4px 0; }
-    .footer-info strong { color: var(--text); }
-    
-    .dev-watermark {
-      margin-top: 20px;
-      padding-top: 20px;
-      border-top: 1px dashed rgba(255,255,255,0.1);
-      color: rgba(255,255,255,0.3); font-size: 11px; font-weight: 500; letter-spacing: 1px; text-transform: uppercase;
+    .dev-watermark { margin-top: 20px; padding-top: 20px; border-top: 1px dashed rgba(255,255,255,0.1); color: rgba(255,255,255,0.3); font-size: 11px; text-transform: uppercase; }
+
+    /* Toast */
+    #toast {
+      position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%) translateY(20px); opacity: 0; pointer-events: none;
+      background: #10B981; color: #000; padding: 12px 24px; border-radius: 100px; font-weight: 700; font-size: 14px;
+      z-index: 300; transition: all 0.4s; display: flex; align-items: center; gap: 8px;
     }
-    .dev-watermark strong { color: var(--brand); opacity: 0.8; }
+    #toast.visible { transform: translateX(-50%) translateY(0); opacity: 1; }
 
     /* Floating WhatsApp */
     .wa-float {
-      position: fixed;
-      bottom: 24px;
-      right: 24px;
-      background: #25D366;
-      color: #fff;
-      width: 60px;
-      height: 60px;
-      border-radius: 50%;
-      display: grid;
-      place-items: center;
-      box-shadow: 0 4px 12px rgba(37, 211, 102, 0.4);
-      z-index: 110; /* Above cart float (100) */
-      transition: transform 0.3s var(--ease);
-      text-decoration: none;
-      animation: pulse-green 2.5s infinite;
+      position: fixed; bottom: 24px; right: 24px; background: #25D366; color: #fff; width: 60px; height: 60px;
+      border-radius: 50%; display: grid; place-items: center; box-shadow: 0 4px 12px rgba(37, 211, 102, 0.4);
+      z-index: 110; transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); text-decoration: none; animation: pulse-green 2.5s infinite;
     }
-    .wa-float:hover {
-      transform: scale(1.1);
-    }
-    .wa-float svg {
-      width: 32px;
-      height: 32px;
-      fill: currentColor;
+    .wa-float:hover { transform: scale(1.1); }
+    .wa-float svg { width: 32px; height: 32px; fill: currentColor; }
+
+    /* Floating Watermark */
+    .watermark-float {
+        position: fixed; bottom: 10px; left: 14px; z-index: 40; font-size: 10px; color: rgba(255, 255, 255, 0.2);
+        font-weight: 700; letter-spacing: 1px; text-transform: uppercase; pointer-events: none; text-shadow: 0 1px 2px rgba(0,0,0,0.8);
     }
 
-    /* ========================================= */
-    /* MOBILE OPTIMIZATIONS (Max Width 768px)    */
-    /* ========================================= */
     @media (max-width: 768px) {
-      .hero {
-        grid-template-columns: 1fr;
-        gap: 20px;
-        text-align: center;
-      }
-      .hero-content {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-      }
-      .hero-content h2 { font-size: 32px; }
-      .hero-content p { max-width: 100%; font-size: 15px; }
-      .hero-badges { justify-content: center; }
-      
-      .promo-frame { transform: none !important; margin: 0 auto; box-shadow: 0 15px 40px rgba(0,0,0,0.5); }
-      .promo-frame:hover { transform: none; }
-
-      .cat-container { top: 70px; } /* Ajuste sticky mobile */
-
-      .grid {
-        grid-template-columns: 1fr; /* 1 Card por linha no mobile */
-        gap: 16px;
-      }
-      
-      .card {
-        padding: 16px;
-      }
-      .card-thumb {
-        width: 70px; height: 70px;
-        font-size: 28px;
-      }
-      .card-title { font-size: 17px; }
-      .card-desc { font-size: 14px; }
-
+      .hero { grid-template-columns: 1fr; text-align: center; }
+      .grid { grid-template-columns: 1fr; }
       .extras-grid { grid-template-columns: 1fr; }
-
-      /* Cart Float Mobile */
-      .cart-float {
-        width: 92%;
-        bottom: 20px;
-        padding: 10px 20px;
-      }
-      .btn-checkout {
-        padding: 10px 20px;
-        font-size: 13px;
-      }
-
-      /* Modal Fullscreen no Mobile */
-      .modal-card {
-        width: 100%; height: 100%; max-height: 100%;
-        border-radius: 0;
-        border: none;
-      }
-      .modal-footer { padding-bottom: 40px; /* Espaço para barra do iPhone */ }
-
-      /* Ajuste WhatsApp Mobile */
-      .wa-float {
-        bottom: 100px; /* Acima da barra do carrinho */
-        right: 16px;
-        width: 50px;
-        height: 50px;
-      }
-      .wa-float svg {
-        width: 28px;
-        height: 28px;
-      }
+      .promo-frame { transform: none !important; margin: 0 auto; }
+      .wa-float { bottom: 100px; right: 16px; width: 50px; height: 50px; }
+      .wa-float svg { width: 28px; height: 28px; }
     }
-
-  /* Marca D'água Flutuante */
-  .watermark-float {
-    position: fixed;
-    bottom: 10px;
-    left: 14px;
-    z-index: 40; /* Baixo z-index para não bloquear interações */
-    font-size: 10px;
-    color: rgba(255, 255, 255, 0.2); /* Bem sutil */
-    font-weight: 700;
-    letter-spacing: 1px;
-    text-transform: uppercase;
-    pointer-events: none; /* Permite clicar através dela */
-    text-shadow: 0 1px 2px rgba(0,0,0,0.8);
-    font-family: 'Inter', sans-serif;
-  }
   </style>
 </head>
 <body>
 
-  <!-- Mensagem Toast (Restaurada) -->
-  <div id="toast" class="success-msg">
-    <span>✅</span> Item adicionado!
-  </div>
+  <!-- Mensagem Toast -->
+  <div id="toast"><span>✅</span> Item adicionado!</div>
 
   <div class="topbar">
     <div class="wrap">
       <div class="brand">
-        <!-- LOGO (Agora é o botão de acesso ao Admin) -->
-        <div class="brand-icon" onclick="window.openAdmin()" title="Acesso Administrativo" style="cursor: pointer;">
-          <!-- Placeholder logo if image fails -->
+        <div class="brand-icon">
           <img src="logo.jpeg" onerror="this.src='https://placehold.co/50x50/FFC107/000000?text=PF'" alt="Logo Galeteria Pais e Filhos">
         </div>
         <div class="brand-text">
@@ -676,7 +339,6 @@
           <span>Premium Delivery</span>
         </div>
       </div>
-      <!-- Status Chip Dinâmico -->
       <div class="status-chip" id="statusBadge">
         <div class="status-dot"></div>
         <span id="statusText">...</span>
@@ -725,7 +387,7 @@
       <div class="cat-scroll" id="catScroll"></div>
     </div>
 
-    <div class="grid" id="menuGrid" style="margin-top: 24px;"></div>
+    <div class="grid" id="menuGrid"></div>
 
     <div class="extras-grid">
       <div class="form-box" id="extrasBox">
@@ -739,7 +401,6 @@
     </div>
   </div>
 
-  <!-- RODAPÉ -->
   <footer class="site-footer">
     <div class="footer-content">
       <div class="footer-logo">
@@ -751,9 +412,7 @@
         <p style="margin-top: 10px;">📍 Atendemos Bairros Próximos e Centro</p>
         <p>📞 (79) 98810-0417</p>
       </div>
-      <div class="dev-watermark">
-        Desenvolvido por <strong>Ferreira Web Design</strong>
-      </div>
+      <div class="dev-watermark">Desenvolvido por <strong>Ferreira Web Design</strong></div>
     </div>
   </footer>
 
@@ -765,7 +424,6 @@
   <!-- Marca D'água Flutuante -->
   <div class="watermark-float">Ferreira Web Design</div>
 
-  <!-- Cart Float -->
   <div class="cart-float" id="cartFloat">
     <div class="cart-summ">
       <span class="cart-label">Total do Pedido</span>
@@ -814,7 +472,6 @@
           <div class="input-group" id="changeGroup" style="display:none;"><label>Troco para</label><input type="tel" id="changeInput" class="modal-input" placeholder="R$ 0,00"></div>
         </div>
 
-        <!-- Área PIX (Visível por padrão pois Pix é a primeira opção) -->
         <div id="pixGroup" style="margin-top: -8px; margin-bottom: 16px; background: rgba(255,193,7,0.1); padding: 12px; border-radius: 12px; border: 1px dashed var(--brand);">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
                 <span style="font-size: 11px; color: var(--brand); font-weight: 700; letter-spacing: 0.05em;">CHAVE PIX (CNPJ)</span>
@@ -822,9 +479,6 @@
             </div>
             <input type="text" value="63957418000101" readonly style="width:100%; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); color: #fff; font-family: monospace; font-size: 15px; padding: 10px; border-radius: 8px; text-align: center; margin-bottom: 8px; outline: none;" id="pixKeyInput" onclick="this.select();">
             <div style="font-size: 11px; color: var(--text-sec); text-align: center; line-height: 1.4;">Titular: <strong style="color: #fff;">Ana Paula Eloy Santana Morais</strong></div>
-            <div style="margin-top: 10px; padding-top: 10px; border-top: 1px dashed rgba(255,255,255,0.1); font-size: 11px; color: #fbbf24; text-align: center;">
-                ⚠️ <strong>Importante:</strong> Envie o comprovante no WhatsApp ao finalizar o pedido.
-            </div>
         </div>
 
         <div class="input-group"><label>Endereço</label><input type="text" id="clientAddress" class="modal-input" placeholder="Rua, Número, Bairro..."></div>
@@ -835,29 +489,11 @@
     </div>
   </div>
 
-  <!-- Modal Admin -->
-  <div class="modal-overlay" id="adminModalOverlay">
-    <div class="modal-card">
-      <div class="modal-header">
-        <h3 style="margin:0; color: var(--brand);">⚙️ Painel de Controle</h3>
-        <button class="close-btn" onclick="window.closeAdmin()">✕</button>
-      </div>
-      <div class="modal-body" id="adminBody">
-        <!-- Conteúdo gerado via JS -->
-      </div>
-      <div class="modal-footer">
-        <!-- Botão gerado via JS -->
-      </div>
-    </div>
-  </div>
-
 <script type="module">
-  // FIREBASE IMPORTS
   import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
   import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-  import { getFirestore, doc, onSnapshot, setDoc, addDoc, collection, getDocs } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+  import { getFirestore, doc, onSnapshot, setDoc, addDoc, collection } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-  // --- FIREBASE SETUP ---
   let firebaseConfig;
   let appId = 'galeteria-pais-filhos'; 
 
@@ -877,7 +513,7 @@
 
   let db, auth, user;
   
-  if (firebaseConfig && firebaseConfig.apiKey !== "SUA_API_KEY") {
+  if (firebaseConfig) {
     const app = initializeApp(firebaseConfig);
     auth = getAuth(app);
     db = getFirestore(app);
@@ -894,22 +530,18 @@
     onAuthStateChanged(auth, (u) => {
       user = u;
       if (user) {
-        console.log("Firebase Conectado. User:", user.uid);
         subscribeToConfig(); 
       }
     });
   } else {
-    console.warn("Firebase não configurado. Usando modo offline (localStorage).");
     loadConfigLocal();
   }
 
-  // --- DADOS ---
-  const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyXPG30IQSfBWDxaHh_7m5Z_ZYnuFcoWNqzv-WqePbtBjSPQkh3Y5wyEgwOpcDbALkqkw/exec"; 
   const WHATSAPP = "5579988100417";
+  const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyXPG30IQSfBWDxaHh_7m5Z_ZYnuFcoWNqzv-WqePbtBjSPQkh3Y5wyEgwOpcDbALkqkw/exec"; 
 
   let appConfig = {
     isOpenManually: true, 
-    // fees: { retirada: 0, perto: 5, centro: 10 }, // REMOVIDO PARA USAR ZONAS
     deliveryZones: [
         { name: "Retirada", price: 0 },
         { name: "Albano Franco", price: 2.00 },
@@ -931,10 +563,7 @@
         { name: "Cidade Nova", price: 8.00 },
         { name: "Sede de Socorro", price: 10.00 }
     ],
-    hours: {
-      galeto: { start: 9, end: 15 },
-      batata: { start: 18, end: 22 }
-    },
+    hours: { galeto: { start: 9, end: 15 } },
     stock: {}
   };
 
@@ -966,11 +595,6 @@
   let selectedExtras = new Set();
   let activeCat = "todos";
 
-  // --- FUNÇÕES GLOBAIS (window) ---
-  window.openAdmin = openAdmin;
-  window.closeAdmin = closeAdmin;
-  window.checkAdminPassword = checkAdminPassword;
-  window.saveAdminConfig = saveAdminConfig;
   window.add = add;
   window.rem = rem;
   window.setCat = setCat;
@@ -982,108 +606,50 @@
   window.updateTotals = updateTotals;
   window.scrollToMenu = scrollToMenu;
   window.sendOrder = sendOrder;
-  window.explodeEmojis = explodeEmojis;
   window.copyPix = copyPix;
 
-  // --- UI HELPERS (FORMATO MANUAL PARA EVITAR BUG R$,00) ---
   function formatMoney(v) { 
       if(v === null || v === undefined || isNaN(v)) return "R$ 0,00";
-      // Força formato manual para garantir compatibilidade
       return "R$ " + parseFloat(v).toFixed(2).replace('.', ','); 
   }
 
-  // --- FUNÇÃO PARA GERAR NÚMERO DO PEDIDO (GLOBAL E SEQUENCIAL) ---
-  async function getNextOrderNumber() {
-      // Timeout de 3.5s para não deixar o cliente esperando se a internet falhar
-      const timeout = new Promise((_, reject) => 
-          setTimeout(() => reject(new Error("Timeout")), 3500)
-      );
-
-      // Tenta buscar o total de pedidos no Firebase
-      const fetchOrder = async () => {
-          if (!db || !user) throw new Error("Sem conexão DB");
-          
-          const colRef = collection(db, 'artifacts', appId, 'public', 'data', 'orders');
-          // Pega todos os documentos para contar (Simples e eficaz para volume médio)
-          const snapshot = await getDocs(colRef);
-          
-          // O próximo número é o total atual + 1
-          const nextNum = snapshot.size + 1;
-          return nextNum.toString().padStart(2, '0'); // Garante formato "01", "02"
-      };
-
-      try {
-          // Tenta pegar o número global. Se demorar, cai no catch.
-          return await Promise.race([fetchOrder(), timeout]);
-      } catch (e) {
-          console.log("Usando numeração local (fallback) devido a:", e.message);
-          // Fallback: Usa memória do celular se a internet falhar
-          let count = parseInt(localStorage.getItem('localOrderCount') || '0') + 1;
-          localStorage.setItem('localOrderCount', count);
-          return count.toString().padStart(2, '0');
-      }
-  }
-
-  // --- FUNÇÃO COPIAR PIX ---
   function copyPix() {
       const input = document.getElementById('pixKeyInput');
       input.select();
-      input.setSelectionRange(0, 99999); // Para mobile
+      input.setSelectionRange(0, 99999);
       document.execCommand('copy');
-      
-      // Feedback visual
-      const originalText = document.querySelector('#pixGroup button').innerText;
-      document.querySelector('#pixGroup button').innerText = "COPIADO!";
-      setTimeout(() => {
-          document.querySelector('#pixGroup button').innerText = originalText;
-      }, 2000);
-      
-      // Usar o Toast existente
       const t = document.getElementById('toast');
       t.innerHTML = "<span>📋</span> Chave Pix copiada!";
-      t.classList.add('visible'); 
-      setTimeout(() => t.classList.remove('visible'), 2000);
+      t.classList.add('visible'); setTimeout(() => t.classList.remove('visible'), 2000);
   }
 
-  // --- FUNÇÃO DE EXPLOSÃO DE EMOJIS ---
+  // --- EXPLOSÃO DE EMOJIS (Restaurada) ---
   function explodeEmojis(x, y) {
-      // Se não houver coordenadas (ex: chamado programaticamente), usa o centro
       if (!x || !y) {
           x = window.innerWidth / 2;
           y = window.innerHeight / 2;
       }
-
       const emojis = ['🍗', '🍟', '🥤', '😋', '🔥', '🧡', '✨', '🇧🇷'];
-      const count = 12; // Quantidade de emojis
-
+      const count = 12;
       for (let i = 0; i < count; i++) {
         const el = document.createElement('div');
         el.className = 'emoji-particle';
         el.innerText = emojis[Math.floor(Math.random() * emojis.length)];
         el.style.left = x + 'px';
         el.style.top = y + 'px';
-        
-        // Direção aleatória
         const angle = Math.random() * Math.PI * 2;
-        // Distância aleatória
         const velocity = 60 + Math.random() * 80;
-        
         const tx = Math.cos(angle) * velocity + 'px';
         const ty = Math.sin(angle) * velocity + 'px';
         const rot = (Math.random() * 360 - 180) + 'deg';
-
         el.style.setProperty('--tx', tx);
         el.style.setProperty('--ty', ty);
         el.style.setProperty('--rot', rot);
-
         document.body.appendChild(el);
-        
-        // Remove do DOM após a animação
         setTimeout(() => el.remove(), 1000);
       }
   }
 
-  // --- MÁSCARA TELEFONE ---
   const phoneInput = document.getElementById('clientPhone');
   if(phoneInput) {
     phoneInput.addEventListener('input', function (e) {
@@ -1092,74 +658,32 @@
     });
   }
 
-  // --- SINCRONIZAÇÃO DE DADOS ---
   function subscribeToConfig() {
     if (!db || !user) return;
     const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'config', 'store_settings');
-    
     onSnapshot(docRef, (docSnap) => {
       if (docSnap.exists()) {
         const remoteConfig = docSnap.data();
-        
-        // CORREÇÃO: Mesclar objetos aninhados (stock) corretamente
         appConfig = { 
             ...appConfig, 
             ...remoteConfig,
             stock: { ...appConfig.stock, ...(remoteConfig.stock || {}) },
             hours: { ...appConfig.hours, ...(remoteConfig.hours || {}) }
         };
-        
-        if(remoteConfig.deliveryZones) {
-            appConfig.deliveryZones = remoteConfig.deliveryZones;
-        }
-
-        console.log("Config atualizada do Firebase!", appConfig);
-        
+        if(remoteConfig.deliveryZones) appConfig.deliveryZones = remoteConfig.deliveryZones;
         renderMenu();
         updateDeliveryOptions();
         checkOpenStatus();
-        
-        // Se o admin estiver aberto, atualiza os botões visualmente
-        if(document.getElementById('adminModalOverlay').classList.contains('open')) {
-            refreshAdminSwitches();
-        }
-
-      } else {
-        saveConfigToFirebase();
       }
-    }, (error) => {
-      console.error("Erro ao ouvir config:", error);
     });
-  }
-
-  async function saveConfigToFirebase() {
-    if (!db || !user) {
-      localStorage.setItem('galeteriaConfig', JSON.stringify(appConfig));
-      return; 
-    }
-    try {
-      const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'config', 'store_settings');
-      await setDoc(docRef, appConfig);
-      console.log("Config salva no Firebase!");
-    } catch (e) {
-      console.error("Erro ao salvar config:", e);
-      alert("⚠️ Erro ao salvar na nuvem! Verifique sua internet.\nErro: " + e.message);
-      throw e;
-    }
   }
 
   async function saveOrderToFirebase(orderData) {
     if (!db || !user) return;
     try {
       const colRef = collection(db, 'artifacts', appId, 'public', 'data', 'orders');
-      await addDoc(colRef, {
-        ...orderData,
-        timestamp: new Date()
-      });
-      console.log("Pedido salvo no Firebase!");
-    } catch (e) {
-      console.error("Erro ao salvar pedido no Firebase:", e);
-    }
+      await addDoc(colRef, { ...orderData, timestamp: new Date() });
+    } catch (e) { console.error("Erro Firebase:", e); }
   }
 
   function loadConfigLocal() {
@@ -1167,274 +691,26 @@
     if (saved) {
       const parsed = JSON.parse(saved);
       appConfig = { ...appConfig, ...parsed };
-      // Local backward compatibility
-      if(!appConfig.deliveryZones) {
-          appConfig.deliveryZones = [
-            { name: "Retirada", price: 0 },
-            { name: "Albano Franco", price: 2.00 },
-            { name: "Marcos Freire 1", price: 3.00 },
-            { name: "Marcos Freire 3", price: 3.00 },
-            { name: "Taiçoca de Dentro", price: 3.00 },
-            { name: "Maria do Carmo", price: 4.00 },
-            { name: "Novo Horizonte", price: 4.00 },
-            { name: "Marcos Freire 2", price: 4.00 },
-            { name: "Piabeta", price: 5.00 },
-            { name: "João Alves", price: 5.00 },
-            { name: "Porto D'antas", price: 5.00 },
-            { name: "Neuzice Barreto", price: 5.00 },
-            { name: "Taiçoca de Fora", price: 5.00 },
-            { name: "Fernando Collor", price: 6.00 },
-            { name: "Bairro Industrial", price: 6.00 },
-            { name: "Japãozinho", price: 7.00 },
-            { name: "Lamarão", price: 7.00 },
-            { name: "Cidade Nova", price: 8.00 },
-            { name: "Sede de Socorro", price: 10.00 }
-          ];
-      }
     }
-    products.forEach(p => {
-      // Se não estiver definido no config carregado, assume true
-      if (appConfig.stock[p.id] === undefined) appConfig.stock[p.id] = true;
-    });
+    products.forEach(p => { if (appConfig.stock[p.id] === undefined) appConfig.stock[p.id] = true; });
     renderMenu();
     updateDeliveryOptions();
     checkOpenStatus();
   }
 
-  // --- LOGICA DE ADMINISTRAÇÃO UI ---
-  
-  // Função auxiliar para manter o admin visualmente sincronizado
-  function refreshAdminSwitches() {
-      const toggleOpen = document.getElementById('adminOpenToggle');
-      if(toggleOpen) toggleOpen.checked = appConfig.isOpenManually;
-
-      products.forEach(p => {
-          const checkbox = document.getElementById(`stock_${p.id}`);
-          if (checkbox) checkbox.checked = appConfig.stock[p.id] !== false;
-      });
-  }
-
-  async function saveAdminConfig() {
-    const btn = document.querySelector('#adminModalOverlay .btn-primary');
-    const oldText = btn.innerText;
-    btn.innerText = "Salvando..."; btn.disabled = true;
-
-    try {
-        appConfig.hours.galeto.start = parseInt(document.getElementById('adminGaletoStart').value);
-        appConfig.hours.galeto.end = parseInt(document.getElementById('adminGaletoEnd').value);
-        
-        // Removed Batata hours save logic as requested
-        
-        // Ler zonas de entrega dinâmicas
-        const zoneInputs = document.querySelectorAll('.zone-input-group');
-        let newZones = [];
-        zoneInputs.forEach(group => {
-            const name = group.dataset.name;
-            const val = parseFloat(group.querySelector('input').value);
-            if(!isNaN(val)) {
-                newZones.push({ name: name, price: val });
-            }
-        });
-        newZones.sort((a,b) => a.price - b.price);
-        appConfig.deliveryZones = newZones;
-
-        appConfig.isOpenManually = document.getElementById('adminOpenToggle').checked;
-        
-        // CORREÇÃO: Captura explícita do estado dos checkboxes
-        products.forEach(p => {
-          const checkbox = document.getElementById(`stock_${p.id}`);
-          if (checkbox) {
-              if (checkbox.checked) {
-                  appConfig.stock[p.id] = true; 
-              } else {
-                  appConfig.stock[p.id] = false;
-              }
-          }
-        });
-
-        // Força atualização local ANTES de salvar na nuvem (UI Response)
-        updateDeliveryOptions(); 
-        renderMenu();
-        checkOpenStatus();
-
-        await saveConfigToFirebase();
-        
-        // Feedback visual de sucesso
-        const t = document.getElementById('toast');
-        t.innerHTML = "<span>☁️</span> Salvo para todos!";
-        t.classList.add('visible'); setTimeout(() => t.classList.remove('visible'), 3000);
-
-        closeAdmin();
-
-    } catch (error) {
-        console.error(error);
-        // O alert já está no saveConfigToFirebase
-    } finally {
-        btn.innerText = oldText; btn.disabled = false;
-    }
-  }
-
-  function openAdmin() {
-    const body = document.getElementById('adminBody');
-    const footer = document.querySelector('#adminModalOverlay .modal-footer');
-    
-    body.innerHTML = `
-      <div style="text-align:center; padding: 20px 0;">
-        <div style="font-size: 40px; margin-bottom: 10px;">🔒</div>
-        <h3 style="color:var(--text); margin:0 0 20px;">Área Restrita</h3>
-        <div class="input-group">
-          <label>Digite a Senha</label>
-          <input type="password" id="adminPassInput" class="modal-input" placeholder="Senha..." style="text-align:center;">
-        </div>
-      </div>
-    `;
-    
-    footer.innerHTML = `
-      <button class="btn btn-primary" style="width:100%; justify-content: center;" onclick="window.checkAdminPassword()">Entrar</button>
-    `;
-    
-    document.getElementById('adminModalOverlay').style.display = 'flex';
-    setTimeout(() => {
-      document.getElementById('adminModalOverlay').classList.add('open');
-      const input = document.getElementById('adminPassInput');
-      if(input) input.focus();
-    }, 10);
-  }
-
-  function checkAdminPassword() {
-    const pass = document.getElementById('adminPassInput').value;
-    if (pass === "galetopaiefilho123") {
-      renderAdminPanel();
-    } else {
-      const input = document.getElementById('adminPassInput');
-      input.style.border = "1px solid var(--danger)";
-      input.value = "";
-      input.placeholder = "Senha Incorreta!";
-    }
-  }
-
-  function renderAdminPanel() {
-    const body = document.getElementById('adminBody');
-    const footer = document.querySelector('#adminModalOverlay .modal-footer');
-
-    // Gerar inputs de zonas de entrega
-    let zonesHtml = '';
-    // Garantir que existe
-    if(!appConfig.deliveryZones) appConfig.deliveryZones = [];
-    
-    appConfig.deliveryZones.forEach(z => {
-        zonesHtml += `
-            <div class="zone-item zone-input-group" data-name="${z.name}">
-                <label class="zone-label">${z.name}</label>
-                <div style="display:flex; align-items:center; gap:4px;">
-                    <span style="font-size:12px; color:#666;">R$</span>
-                    <input type="number" step="0.50" class="modal-input" style="padding: 6px; font-weight:700;" value="${z.price}">
-                </div>
-            </div>
-        `;
-    });
-
-    body.innerHTML = `
-      <div class="admin-container">
-          
-          <!-- Card Status Geral -->
-          <div class="admin-card">
-            <div class="admin-header-row" style="margin-bottom:0; border-bottom:none;">
-              <span class="admin-section-title">⚡ Status da Loja (Manual)</span>
-              <label class="switch">
-                <input type="checkbox" id="adminOpenToggle" ${appConfig.isOpenManually ? 'checked' : ''}>
-                <span class="slider"></span>
-              </label>
-            </div>
-            <div style="font-size:11px; color:var(--text-sec); margin-top: -10px;">Força a loja a ficar aberta (ignorando horários) ou fechada.</div>
-          </div>
-
-          <!-- Card Horários -->
-          <div class="admin-card">
-            <div class="admin-header-row">
-                <span class="admin-section-title">⏰ Horários de Funcionamento</span>
-            </div>
-            
-            <div class="admin-input-row">
-              <div class="admin-label-sm">🍗 Galeto (Sáb/Dom)</div>
-              <input type="number" id="adminGaletoStart" class="admin-input-sm" value="${appConfig.hours.galeto.start}">
-              <span style="color:#666">-</span>
-              <input type="number" id="adminGaletoEnd" class="admin-input-sm" value="${appConfig.hours.galeto.end}">
-            </div>
-          </div>
-
-          <!-- Card Taxas -->
-          <div class="admin-card">
-            <div class="admin-header-row">
-                <span class="admin-section-title">🛵 Taxas de Entrega</span>
-            </div>
-            <div class="admin-zones-grid">
-                ${zonesHtml}
-            </div>
-          </div>
-
-          <!-- Card Estoque -->
-          <div class="admin-card">
-            <div class="admin-header-row">
-                <span class="admin-section-title">📦 Controle de Estoque</span>
-            </div>
-            <div class="stock-grid">
-                ${products.map((p, index) => `
-                  <div class="stock-item">
-                    <div style="display:flex; align-items:center; gap:10px;">
-                        <span style="font-size:18px;">${p.img}</span>
-                        <div style="display:flex; flex-direction:column;">
-                            <span style="font-size:13px; font-weight:600; color:var(--text);">${p.name}</span>
-                            <span style="font-size:10px; color:var(--text-sec);">${formatMoney(p.price)}</span>
-                        </div>
-                    </div>
-                    <label class="switch">
-                        <input type="checkbox" id="stock_${p.id}" ${appConfig.stock[p.id] !== false ? 'checked' : ''}>
-                        <span class="slider"></span>
-                    </label>
-                  </div>
-                `).join('')}
-            </div>
-          </div>
-
-      </div>
-    `;
-
-    footer.innerHTML = `
-      <button class="btn btn-primary" style="width:100%; justify-content: center; height: 48px; font-size: 15px;" onclick="window.saveAdminConfig()">💾 Salvar Alterações</button>
-    `;
-  }
-
-  function closeAdmin() {
-    const overlay = document.getElementById('adminModalOverlay');
-    overlay.classList.remove('open');
-    setTimeout(() => overlay.style.display = 'none', 300);
-  }
-
-  // --- UI HELPERS ---
   function checkOpenStatus() {
     const now = new Date();
-    const day = now.getDay(); // 0=Dom, 1=Seg, ..., 6=Sáb
+    const day = now.getDay();
     const hour = now.getHours();
-
     let statusText = "Fechado";
     let statusClass = "closed";
-
-    // Dias de funcionamento
-    const isWeekend = (day === 0 || day === 6); // Sáb e Dom
-
+    const isWeekend = (day === 0 || day === 6); 
     const galetoOpen = isWeekend && (hour >= appConfig.hours.galeto.start && hour < appConfig.hours.galeto.end);
 
-    // Nova Lógica Simplificada: Se Manual está ON, abre. Se OFF, fecha.
     if (appConfig.isOpenManually) {
-        statusText = "Aberto";
-        statusClass = "open";
-        // Tenta ser específico se possível
-        if (galetoOpen) statusText = "Aberto (Galetos)";
-        else statusText = "Aberto (Extra)";
+        statusText = "Aberto"; statusClass = "open";
     } else {
-        statusText = "Fechado";
-        statusClass = "closed";
+        statusText = "Fechado"; statusClass = "closed";
     }
 
     const badge = document.getElementById('statusBadge');
@@ -1442,29 +718,17 @@
         badge.className = `status-chip ${statusClass}`;
         document.getElementById('statusText').textContent = statusText;
     }
-
     document.getElementById('labelGaletoHours').textContent = `Sábados e Domingos: ${appConfig.hours.galeto.start}h às ${appConfig.hours.galeto.end}h`;
   }
 
   function updateDeliveryOptions() {
     const sel = document.getElementById('deliverySelect');
-    
-    // Usar deliveryZones se existir (nova versão), senão fallback
     let optionsHtml = '';
-    
     if (appConfig.deliveryZones && appConfig.deliveryZones.length > 0) {
         optionsHtml = appConfig.deliveryZones.map(z => 
             `<option value="${z.price}">${z.name} (${z.price === 0 ? 'Grátis' : formatMoney(z.price)})</option>`
         ).join('');
-    } else {
-        // Fallback antigo caso config não tenha atualizado
-        optionsHtml = `
-          <option value="0">Retirada (Grátis)</option>
-          <option value="5">Bairros Próximos (R$ 5,00)</option>
-          <option value="10">Centro (R$ 10,00)</option>
-        `;
     }
-
     sel.innerHTML = optionsHtml;
   }
 
@@ -1494,7 +758,7 @@
           <div class="card-thumb">${p.img}</div>
           <div class="card-info">
             <h3 class="card-title">${p.name}</h3>
-            <div class="card-rating">★★★★★ <span style="color:var(--text-sec); font-size:10px">(120)</span></div>
+            <div class="card-rating">★★★★★ <span style="color:#a1a1aa; font-size:10px">(120)</span></div>
             <p class="card-desc">${inStock ? p.desc : '❌ INDISPONÍVEL'}</p>
           </div>
         </div>
@@ -1514,38 +778,6 @@
     }).join('');
   }
 
-  function renderExtras() {
-    const extrasBox = document.getElementById('extrasBox');
-    const extrasGrid = document.querySelector('.extras-grid');
-    
-    if (extras.length === 0) {
-        if(extrasBox) extrasBox.style.display = 'none';
-        if(extrasGrid) extrasGrid.style.gridTemplateColumns = '1fr';
-        return;
-    }
-
-    if(extrasBox) extrasBox.style.display = 'block';
-    if(extrasGrid) {
-        // Restaurar grid original (responsivo)
-        if (window.innerWidth > 768) {
-            extrasGrid.style.gridTemplateColumns = '1fr 1fr';
-        } else {
-            extrasGrid.style.gridTemplateColumns = '1fr';
-        }
-    }
-
-    document.getElementById('extrasList').innerHTML = extras.map(ex => `
-      <label class="check-item">
-        <div class="check-left">
-          <input type="checkbox" onchange="window.toggleExtra('${ex.id}', this.checked)" ${selectedExtras.has(ex.id) ? 'checked' : ''}>
-          <div class="custom-checkbox"></div>
-          <span>${ex.name}</span>
-        </div>
-        <span style="font-weight:600; color:var(--brand)">${ex.price > 0 ? '+' + formatMoney(ex.price) : 'Grátis'}</span>
-      </label>
-    `).join('');
-  }
-
   function setCat(id) { activeCat = id; renderCategories(); renderMenu(); }
   function filterMenu() { renderMenu(); }
 
@@ -1553,12 +785,13 @@
     id = parseInt(id);
     cart[id] = (cart[id] || 0) + 1;
     
-    // Trigger explosion if event exists
-    if(event) {
-        window.explodeEmojis(event.clientX, event.clientY);
-    }
+    // Call explosion
+    if(event) explodeEmojis(event.clientX, event.clientY);
 
-    renderMenu(); updateCartUI(); showToast();
+    renderMenu(); updateCartUI();
+    const t = document.getElementById('toast');
+    t.innerHTML = "<span>✅</span> Item adicionado!";
+    t.classList.add('visible'); setTimeout(() => t.classList.remove('visible'), 2000);
   }
   function rem(id) {
     id = parseInt(id);
@@ -1569,15 +802,9 @@
     if (checked) selectedExtras.add(id); else selectedExtras.delete(id);
     updateCartUI();
   }
-  function showToast() {
-    const t = document.getElementById('toast');
-    // Garante que o texto seja o de item adicionado (caso o Pix tenha mudado antes)
-    t.innerHTML = "<span>✅</span> Item adicionado!";
-    t.classList.add('visible'); setTimeout(() => t.classList.remove('visible'), 2000);
-  }
   function clearCart() {
     cart = {}; selectedExtras.clear(); document.getElementById('obsInput').value = "";
-    renderMenu(); renderExtras(); updateCartUI();
+    renderMenu(); updateCartUI();
   }
 
   function getCartTotal() {
@@ -1601,7 +828,7 @@
     const prodTotal = getCartTotal();
     const extraTotal = getExtrasTotal();
     const subtotal = prodTotal + extraTotal;
-    const delivery = parseFloat(document.getElementById('deliverySelect').value);
+    const delivery = parseFloat(document.getElementById('deliverySelect').value) || 0;
     
     document.getElementById('floatTotal').innerText = formatMoney(subtotal);
     const float = document.getElementById('cartFloat');
@@ -1617,36 +844,21 @@
     const list = document.getElementById('cartItemsList');
     let html = '';
     if (Object.keys(cart).length === 0) {
-      list.innerHTML = `
-        <div style="text-align:center; padding:40px 20px; color:var(--text-sec)">
-          <div style="font-size: 40px; margin-bottom: 10px; opacity:0.5">🛒</div>
-          <p>O seu carrinho está vazio.</p>
-          <button class="btn btn-sec" onclick="window.closeModal()" style="margin-top:10px; padding: 8px 16px; font-size:12px">Voltar ao Cardápio</button>
-        </div>`;
+      list.innerHTML = `<div style="text-align:center; padding:40px 20px; color:#a1a1aa"><p>Carrinho vazio.</p></div>`;
       return;
     }
     for (const [id, qty] of Object.entries(cart)) {
       const p = products.find(x => x.id == id);
-      
-      // Correção: Removida a linha 'msg +=' que causava o erro aqui
-      
       html += `
         <div class="cart-item">
           <div style="font-size:24px;">${p.img}</div>
           <div style="flex:1;">
             <div style="font-weight:600;">${p.name}</div>
-            <div style="font-size:12px; color:var(--text-sec);">${qty}x ${formatMoney(p.price)}</div>
+            <div style="font-size:12px; color:#a1a1aa;">${qty}x ${formatMoney(p.price)}</div>
           </div>
           <div style="font-weight:700;">${formatMoney(p.price * qty)}</div>
         </div>
       `;
-    }
-    if (selectedExtras.size > 0) {
-      html += '<div style="margin-top:10px; font-size:12px; color:var(--brand); font-weight:700;">ADICIONAIS:</div>';
-      selectedExtras.forEach(eid => {
-        const ex = extras.find(x => x.id === eid);
-        html += `<div style="display:flex; justify-content:space-between; font-size:13px; color:var(--text-sec); margin-top:4px;"><span>+ ${ex.name}</span><span>${formatMoney(ex.price)}</span></div>`;
-      });
     }
     list.innerHTML = html;
   }
@@ -1654,10 +866,9 @@
   function updateTotals() { updateCartUI(); }
 
   function openModal() {
-    // Permite abrir modal mesmo vazio para ver histórico ou só checkar
     const overlay = document.getElementById('modalOverlay');
     overlay.style.display = 'flex'; setTimeout(() => overlay.classList.add('open'), 10);
-    renderCartItems(); // Garante render atualizado
+    renderCartItems(); 
   }
   function closeModal() {
     const overlay = document.getElementById('modalOverlay');
@@ -1668,24 +879,18 @@
   document.getElementById('paymentMethod').addEventListener('change', function(e) {
     const changeGrp = document.getElementById('changeGroup');
     const pixGrp = document.getElementById('pixGroup');
-    
     if (e.target.value === 'Dinheiro') {
-        changeGrp.style.display = 'block';
-        pixGrp.style.display = 'none';
+        changeGrp.style.display = 'block'; pixGrp.style.display = 'none';
     } else if (e.target.value === 'Pix') {
-        changeGrp.style.display = 'none';
-        pixGrp.style.display = 'block';
+        changeGrp.style.display = 'none'; pixGrp.style.display = 'block';
     } else {
-        changeGrp.style.display = 'none';
-        pixGrp.style.display = 'none';
+        changeGrp.style.display = 'none'; pixGrp.style.display = 'none';
     }
   });
 
-  // FUNÇÃO DE ENVIO OTIMIZADA
   async function sendOrder() {
-    // --- TRAVA DE LOJA FECHADA ---
     if (!appConfig.isOpenManually) {
-        alert("🔒 LOJA FECHADA NO MOMENTO\n\nAgradecemos a preferência, mas agora não estamos a receber pedidos.\n\n🕒 Nossos Horários:\n🍗 Galetos: Sáb e Dom (09h às 15h)\n\nPor favor, volte em breve! 🧡");
+        alert("🔒 LOJA FECHADA\nEstamos fechados no momento. Horário: Sáb e Dom (09h-15h).");
         return; 
     }
 
@@ -1699,66 +904,38 @@
     const deliveryText = deliverySelect.options[deliverySelect.selectedIndex].text;
     const obs = document.getElementById('obsInput').value;
 
-    // Validações básicas
-    if (Object.keys(cart).length === 0) { alert("Seu carrinho está vazio!"); return; }
+    if (Object.keys(cart).length === 0) { alert("Carrinho vazio!"); return; }
     if (!name || !phone) { alert("Preencha nome e telefone."); return; }
     if (deliveryVal > 0 && !address) { alert("Preencha o endereço."); return; }
 
     const btn = document.querySelector('.modal-footer .btn-primary');
     const originalText = btn.innerText;
-    
-    // Feedback visual
-    btn.innerText = "Gerando Pedido #..."; 
-    btn.disabled = true;
+    btn.innerText = "Enviando..."; btn.disabled = true;
 
-    // 1. Geração DO NÚMERO SEQUENCIAL (Aguarda o DB)
-    let orderNum;
-    try {
-        orderNum = await getNextOrderNumber();
-    } catch (e) {
-        orderNum = "??"; // Caso extremo
-    }
+    // LOCAL ORDER NUMBER (FASTEST)
+    let localCount = parseInt(localStorage.getItem('localOrderCount') || '0');
+    let orderNum = (localCount + 1).toString().padStart(2, '0');
+    localStorage.setItem('localOrderCount', localCount + 1);
 
-    // 2. Montagem da Mensagem
     let itemsList = "";
     for (const [id, qty] of Object.entries(cart)) {
       const p = products.find(x => x.id == id);
-      if(p) {
-          itemsList += `${qty}x ${p.name}, `;
-      }
-    }
-    if (selectedExtras.size > 0) {
-      itemsList += "Extras: ";
-      selectedExtras.forEach(eid => itemsList += `${extras.find(x=>x.id===eid).name}, `);
+      if(p) itemsList += `${qty}x ${p.name}, `;
     }
 
     const total = getCartTotal() + getExtrasTotal() + deliveryVal;
     
-    // Lógica de Pagamento Ajustada (Valor aparece para TODOS: Pix, Dinheiro e Cartão)
-    // Ex: "Pix R$ 50,00" ou "Dinheiro R$ 34,00 (Troco: 50,00)"
     let pagamentoTexto = `${payment} ${formatMoney(total)}`;
-
-    // Se for dinheiro e tiver troco, adiciona a informação
-    if (payment === 'Dinheiro' && change) {
-        pagamentoTexto += ` (Troco: ${change})`;
-    }
+    if (payment === 'Dinheiro' && change) pagamentoTexto += ` (Troco: ${change})`;
 
     let msg = `*PEDIDO #${orderNum} - Galeteria Pais e Filhos* 🍗\n`;
     msg += `👤 *Cliente:* ${name}\n📞 *Tel:* ${phone}\n\n`;
     msg += `🛒 *ITENS:*\n`;
     for (const [id, qty] of Object.entries(cart)) {
       const p = products.find(x => x.id == id);
-      if(p) {
-          msg += `${qty}x ${p.name} - ${formatMoney(p.price * qty)}\n`;
-      }
-    }
-    if (selectedExtras.size > 0) {
-      msg += `\n➕ *Extras:* `;
-      selectedExtras.forEach(eid => msg += `${extras.find(x=>x.id===eid).name}, `);
-      msg += `\n`;
+      if(p) msg += `${qty}x ${p.name} - ${formatMoney(p.price * qty)}\n`;
     }
     msg += `\n💸 *Total:* ${formatMoney(total)}\n`;
-    // Usa o texto detalhado com o valor explícito
     msg += `💳 *Pag:* ${pagamentoTexto}\n`;
     
     if (deliveryVal > 0) {
@@ -1771,54 +948,38 @@
     
     if (obs) msg += `📝 *Obs:* ${obs}\n`;
 
-    // 3. ABERTURA IMEDIATA DO WHATSAPP (Prioridade Total)
+    // OPEN WHATSAPP IMMEDIATELY
     const waLink = `https://wa.me/${WHATSAPP}?text=${encodeURIComponent(msg)}`;
     window.open(waLink, '_blank');
 
-    // 4. Salva os dados em "Segundo Plano" (Fire and Forget)
+    // SAVE BACKGROUND
     const orderData = {
         numero: orderNum,
         data: new Date().toLocaleString('pt-BR'),
-        cliente: name,
-        telefone: phone,
-        valor: total,
-        pagamento: pagamentoTexto,
-        endereco: address || "Retirada",
-        bairro: deliveryText,
-        detalhes: itemsList,
-        entrega: deliveryVal
+        cliente: name, telefone: phone, valor: total, pagamento: pagamentoTexto,
+        endereco: address || "Retirada", bairro: deliveryText, detalhes: itemsList, entrega: deliveryVal
     };
 
-    // Salvar no Firebase (Histórico)
-    saveOrderToFirebase(orderData).catch(e => console.log("Erro Firebase:", e));
-
-    // Salvar na Planilha (Google Sheets)
+    saveOrderToFirebase(orderData);
     if (APPS_SCRIPT_URL) {
         fetch(APPS_SCRIPT_URL, {
-            method: 'POST', mode: 'no-cors',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(orderData)
-        }).catch(e => console.log("Erro planilha:", e));
+            method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(orderData)
+        }).catch(e => console.log(e));
     }
 
-    // Resetar UI
     setTimeout(() => {
-        btn.innerText = originalText;
-        btn.disabled = false;
-        window.closeModal();
-        window.clearCart(); // Opcional: limpar carrinho após sucesso
+        btn.innerText = originalText; btn.disabled = false;
+        window.closeModal(); window.clearCart();
     }, 1000);
   }
 
-  // Initial render (will be updated when Firebase connects)
+  // Initial render
   renderCategories();
   renderMenu();
-  renderExtras();
   updateDeliveryOptions();
   checkOpenStatus();
 
   document.getElementById('modalOverlay').addEventListener('click', (e) => { if (e.target.id === 'modalOverlay') closeModal(); });
-  document.getElementById('adminModalOverlay').addEventListener('click', (e) => { if (e.target.id === 'adminModalOverlay') closeAdmin(); });
 </script>
 </body>
 </html>
