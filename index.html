@@ -469,11 +469,14 @@
 
         <div id="pixGroup" style="margin-top: -8px; margin-bottom: 16px; background: rgba(255,193,7,0.1); padding: 12px; border-radius: 12px; border: 1px dashed var(--brand);">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-                <span style="font-size: 11px; color: var(--brand); font-weight: 700; letter-spacing: 0.05em;">CHAVE PIX (CNPJ)</span>
+                <span style="font-size: 11px; color: var(--brand); font-weight: 700; letter-spacing: 0.05em;">CHAVE PIX</span>
                 <button onclick="window.copyPix()" style="background: var(--brand); border: none; border-radius: 6px; padding: 6px 12px; font-weight: 700; cursor: pointer; font-size: 11px; color: #000; box-shadow: 0 2px 5px rgba(0,0,0,0.2);">COPIAR</button>
             </div>
-            <input type="text" value="63957418000101" readonly style="width:100%; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); color: #fff; font-family: monospace; font-size: 15px; padding: 10px; border-radius: 8px; text-align: center; margin-bottom: 8px; outline: none;" id="pixKeyInput" onclick="this.select();">
-            <div style="text-align: center; font-size: 11px; color: #aaa;">Titular: <strong>Ana Paula Eloy Santana Morais</strong></div>
+            <input type="text" value="79998773002" readonly style="width:100%; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); color: #fff; font-family: monospace; font-size: 15px; padding: 10px; border-radius: 8px; text-align: center; margin-bottom: 8px; outline: none;" id="pixKeyInput" onclick="this.select();">
+            <div style="text-align: center; font-size: 11px; color: #aaa; line-height: 1.4;">
+                Titular: <strong id="pixNameDisplay" style="color: #fff;">Gabriel Santana Morais</strong><br>
+                <span id="pixBankDisplay" style="font-size: 10px; opacity: 0.8;">Banco do Brasil</span>
+            </div>
         </div>
 
         <div class="input-group"><label>Endereço</label><input type="text" id="clientAddress" class="modal-input" placeholder="Rua, Número, Bairro..."></div>
@@ -520,6 +523,18 @@
                     "Forçar Fechada" tem prioridade sobre tudo.
                 </div>
                 
+                <h4 style="color:#aaa; font-size:12px; margin-top:20px; text-transform:uppercase; font-weight:700;">CONFIGURAÇÃO DO PIX</h4>
+                <div class="admin-row" style="display:block;">
+                  <label style="font-size:11px; color:#aaa;">Chave Pix</label>
+                  <input type="text" id="admPixKey" class="modal-input" style="margin-bottom:5px;">
+                  
+                  <label style="font-size:11px; color:#aaa;">Nome Titular</label>
+                  <input type="text" id="admPixName" class="modal-input" style="margin-bottom:5px;">
+                  
+                  <label style="font-size:11px; color:#aaa;">Banco/Detalhes</label>
+                  <input type="text" id="admPixBank" class="modal-input">
+                </div>
+
                 <h4 style="color:#aaa; font-size:12px; margin-top:20px;">BAIRROS E TAXAS</h4>
                 <div id="admZones"></div>
                 <button class="btn btn-sec" style="padding:8px; margin-top:5px; width:auto;" onclick="addZone()">+ Bairro</button>
@@ -579,8 +594,19 @@
 
   const extras = [];
 
-  // Default config: auto=true, manualOpen=false, manualClose=false
-  let appConfig = { isOpenManually: false, isClosedManually: false, deliveryZones: [], hours: { galeto: { start: 9, end: 15 } }, stock: {} };
+  // Configuração padrão incluindo o Pix atual
+  let appConfig = { 
+      isOpenManually: false, 
+      isClosedManually: false, 
+      deliveryZones: [], 
+      hours: { galeto: { start: 9, end: 15 } }, 
+      stock: {},
+      pix: {
+          key: "79998773002",
+          name: "Gabriel Santana Morais",
+          bank: "Banco do Brasil"
+      }
+  };
   let cart = {}; 
   window.activeCat = 'todos';
 
@@ -643,9 +669,16 @@
 
   window.saveAdmin = async () => {
       const btn = event.target; btn.innerText = "...";
-      // Guarda os 2 switches
+      // Guarda os switches
       appConfig.isOpenManually = document.getElementById('admOpen').checked;
       appConfig.isClosedManually = document.getElementById('admClose').checked;
+      
+      // Guarda o Pix
+      appConfig.pix = {
+          key: document.getElementById('admPixKey').value,
+          name: document.getElementById('admPixName').value,
+          bank: document.getElementById('admPixBank').value
+      };
       
       products.forEach(p => {
           const el = document.getElementById('stk_'+p.id);
@@ -656,6 +689,7 @@
       
       // Atualiza UI imediata
       checkOpenStatus();
+      updatePixUI();
   };
 
   window.loadOrders = async () => {
@@ -679,6 +713,13 @@
       document.getElementById('admOpen').checked = appConfig.isOpenManually || false;
       document.getElementById('admClose').checked = appConfig.isClosedManually || false;
       
+      // Preenche Pix
+      if(appConfig.pix) {
+          document.getElementById('admPixKey').value = appConfig.pix.key || "";
+          document.getElementById('admPixName').value = appConfig.pix.name || "";
+          document.getElementById('admPixBank').value = appConfig.pix.bank || "";
+      }
+
       const zBox = document.getElementById('admZones');
       zBox.innerHTML = (appConfig.deliveryZones||[]).map((z,i) => `
         <div class="admin-row">
@@ -751,6 +792,19 @@
     return autoOpen;
   }
 
+  function updatePixUI() {
+      if(appConfig.pix) {
+          const keyInput = document.getElementById('pixKeyInput');
+          if(keyInput) keyInput.value = appConfig.pix.key;
+          
+          const nameDisplay = document.getElementById('pixNameDisplay');
+          if(nameDisplay) nameDisplay.innerText = appConfig.pix.name;
+          
+          const bankDisplay = document.getElementById('pixBankDisplay');
+          if(bankDisplay) bankDisplay.innerText = appConfig.pix.bank;
+      }
+  }
+
   function subscribeToConfig() {
     const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'config', 'store_settings');
     onSnapshot(docRef, (s) => {
@@ -768,6 +822,8 @@
         else { badge.className='status-chip closed'; txt.innerText="Fechado"; }
         
         renderMenu();
+        updatePixUI();
+        
         if(document.getElementById('adminModalOverlay').classList.contains('open')) renderAdmin();
       }
     });
