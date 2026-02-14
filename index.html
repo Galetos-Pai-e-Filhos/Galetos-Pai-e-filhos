@@ -435,7 +435,7 @@
     <div class="modal-card">
       <div class="modal-header">
         <h3 style="margin:0; font-weight: 700;">Seu Carrinho</h3>
-        <button class="close-btn" onclick="window.closeModal()">✕</button>
+        <button class="close-btn" onclick="window.closeCart()">✕</button>
       </div>
       <div class="modal-body">
         <div id="cartItemsList"></div>
@@ -635,8 +635,9 @@
       showToast();
   };
   window.rem = (id) => { if(cart[id]>0) cart[id]--; if(cart[id]===0) delete cart[id]; renderCartFloat(); renderCartModal(); };
+  window.clearCart = () => { cart = {}; renderCartFloat(); if(document.getElementById('cartModal').classList.contains('open')) renderCartModal(); };
   window.openCart = () => { renderCartModal(); document.getElementById('cartModal').classList.add('open'); };
-  window.closeModal = () => { document.getElementById('cartModal').classList.remove('open'); };
+  window.closeCart = () => { document.getElementById('cartModal').classList.remove('open'); };
   window.scrollToMenu = () => document.getElementById('menu').scrollIntoView({behavior:'smooth'});
   window.togglePay = () => { document.getElementById('payChange').style.display = document.getElementById('payMethod').value === 'Dinheiro' ? 'block' : 'none'; };
   window.copyPix = () => { document.getElementById('pixKeyInput').select(); document.execCommand('copy'); alert("Chave Copiada!"); };
