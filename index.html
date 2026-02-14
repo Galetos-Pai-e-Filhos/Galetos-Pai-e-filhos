@@ -468,7 +468,7 @@
         <div class="input-group"><label>Telefone</label><input type="tel" id="clientPhone" class="modal-input" placeholder="(XX) 9XXXX-XXXX" maxlength="15"></div>
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
           <div class="input-group"><label>Pagamento</label><select id="paymentMethod" class="modal-input"><option value="Pix">Pix</option><option value="Cartão">Cartão</option><option value="Dinheiro">Dinheiro</option></select></div>
-          <div class="input-group" id="changeGroup" style="display:none;"><label>Troco para</label><input type="tel" id="changeInput" class="modal-input" placeholder="R$ 0,00"></div>
+          <div class="input-group" id="changeGroup" style="display:none;"><label>Troco para</label><input type="tel" id="payChange" class="modal-input" placeholder="R$ 0,00"></div>
         </div>
 
         <div id="pixGroup" style="margin-top: -8px; margin-bottom: 16px; background: rgba(255,193,7,0.1); padding: 12px; border-radius: 12px; border: 1px dashed var(--brand);">
@@ -573,7 +573,28 @@
   const WHATSAPP = "5579988100417";
   const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyXPG30IQSfBWDxaHh_7m5Z_ZYnuFcoWNqzv-WqePbtBjSPQkh3Y5wyEgwOpcDbALkqkw/exec"; 
 
-  // --- DADOS ---
+  // --- DADOS PADRÃO (FALLBACK) ---
+  const defaultZones = [
+      { name: "Albano Franco", price: 2.00 },
+      { name: "Marcos Freire 1", price: 3.00 },
+      { name: "Marcos Freire 3", price: 3.00 },
+      { name: "Taiçoca de Dentro", price: 3.00 },
+      { name: "Maria do Carmo", price: 4.00 },
+      { name: "Novo Horizonte", price: 4.00 },
+      { name: "Marcos Freire 2", price: 4.00 },
+      { name: "Piabeta", price: 5.00 },
+      { name: "João Alves", price: 5.00 },
+      { name: "Porto D'antas", price: 5.00 },
+      { name: "Neuzice Barreto", price: 5.00 },
+      { name: "Taiçoca de Fora", price: 5.00 },
+      { name: "Fernando Collor", price: 6.00 },
+      { name: "Bairro Industrial", price: 6.00 },
+      { name: "Japãozinho", price: 7.00 },
+      { name: "Lamarão", price: 7.00 },
+      { name: "Cidade Nova", price: 8.00 },
+      { name: "Sede de Socorro", price: 10.00 }
+  ];
+
   const products = [
     { id: 10, cat: "combos", name: "Combo 1 (Inteiro)", desc: "Batatas e Farofa", price: 45.00, img: "🍗" },
     { id: 11, cat: "combos", name: "Combo 1 (Metade)", desc: "Batatas e Farofa", price: 25.00, img: "🍗" },
@@ -598,11 +619,11 @@
 
   const extras = [];
 
-  // Configuração padrão incluindo o Pix atual
+  // Configuração padrão incluindo o Pix atual e Bairros
   let appConfig = { 
       isOpenManually: false, 
       isClosedManually: false, 
-      deliveryZones: [], 
+      deliveryZones: defaultZones, 
       hours: { galeto: { start: 9, end: 15 } }, 
       stock: {},
       pix: {
@@ -644,7 +665,7 @@
   window.closeModal = () => { document.getElementById('cartModal').classList.remove('open'); };
   window.closeCart = () => { document.getElementById('cartModal').classList.remove('open'); };
   window.scrollToMenu = () => document.getElementById('menu').scrollIntoView({behavior:'smooth'});
-  window.togglePay = () => { document.getElementById('payChange').style.display = document.getElementById('payMethod').value === 'Dinheiro' ? 'block' : 'none'; };
+  window.togglePay = () => { document.getElementById('payChange').style.display = document.getElementById('paymentMethod').value === 'Dinheiro' ? 'block' : 'none'; };
   window.copyPix = () => { document.getElementById('pixKeyInput').select(); document.execCommand('copy'); alert("Chave Copiada!"); };
   window.updateTotals = () => renderCartModal(); 
   window.filterMenu = renderMenu;
@@ -803,7 +824,7 @@
       sBox.innerHTML = products.map(p => `
         <div class="admin-row">
             <span style="font-size:12px;">${p.name}</span>
-            <label class="switch"><input type="checkbox" id="stk_${p.id}" ${appConfig.stock[p.id]!==false?'checked':''}><span class="slider"></span></label>
+            <label class="switch"><input type="checkbox" id="stk_${p.id}" ${appConfig.stock[p.id]!==false?'checked':''} id="admStockSwitch"><span class="slider"></span></label>
         </div>`).join('');
   }
 
@@ -843,14 +864,25 @@
                 </div>
             </div>`;
       }
+      
       const sel = document.getElementById('deliverySelect');
       
       // Proteção para carregar zonas
       const zones = Array.isArray(appConfig.deliveryZones) ? appConfig.deliveryZones : [];
       
-      if(sel.options.length === 0 && zones.length > 0) {
-          sel.innerHTML = zones.map(z => `<option value="${z.price}">${z.name} (${formatMoney(z.price)})</option>`).join('');
-      }
+      // Se estiver vazio, popula. Se não estiver, mantém (para não resetar seleção do usuário se ele já abriu)
+      // MAS se mudou no admin, precisa atualizar. 
+      // Simplificação: sempre re-popula se o length mudou ou se é a primeira vez
+      // Aqui, vamos repopular sempre que abrir o modal (updateTotals chama isso)
+      
+      // Salva seleção atual
+      const currentVal = sel.value;
+      
+      sel.innerHTML = zones.map(z => `<option value="${z.price}">${z.name} (${formatMoney(z.price)})</option>`).join('');
+      
+      // Restaura seleção se possível
+      if(currentVal) sel.value = currentVal;
+      
       const delPrice = parseFloat(sel.value || 0);
       document.getElementById('modalTotal').innerText = formatMoney(totalProd + delPrice);
   }
@@ -956,8 +988,17 @@
       const address = document.getElementById('clientAddress').value;
       const pay = document.getElementById('paymentMethod').value;
       const change = document.getElementById('payChange').value;
-      const delPrice = parseFloat(document.getElementById('deliverySelect').value);
-      const delText = document.getElementById('deliverySelect').options[document.getElementById('deliverySelect').selectedIndex].text.split('(')[0].trim();
+      const deliveryEl = document.getElementById('deliverySelect');
+      
+      // Proteção contra select vazio
+      let delPrice = 0;
+      let delText = "Retirada/A Combinar";
+      
+      if(deliveryEl.options.length > 0 && deliveryEl.selectedIndex >= 0) {
+          delPrice = parseFloat(deliveryEl.value);
+          delText = deliveryEl.options[deliveryEl.selectedIndex].text.split('(')[0].trim();
+      }
+
       const obs = document.getElementById('obsInput').value;
 
       if(!name || !address) { alert("Preencha dados!"); btn.disabled=false; btn.innerText="Finalizar"; if(waWindow) waWindow.close(); return; }
