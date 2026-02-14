@@ -16,9 +16,8 @@
       /* --- DESIGN ORIGINAL (PREMIUM) --- */
       --bg: #050505;
       --surface: #18181b;
-      /* Vidro escuro chique para modais e cartões */
       --surface-glass: rgba(20, 20, 25, 0.75); 
-      --modal-glass: rgba(15, 15, 20, 0.92);
+      --modal-glass: rgba(15, 15, 20, 0.95);
       --text: #ffffff;
       --text-sec: #a1a1aa;
       --border: rgba(255,255,255,0.1);
@@ -40,7 +39,6 @@
     body {
       margin: 0; font-family: 'Inter', sans-serif;
       background-color: var(--bg); color: var(--text);
-      /* Fundo com profundidade */
       background-image: 
         radial-gradient(circle at 100% 0%, rgba(255,193,7,0.06) 0%, transparent 40%),
         radial-gradient(circle at 0% 100%, rgba(255,193,7,0.03) 0%, transparent 40%);
@@ -60,12 +58,11 @@
     @keyframes pulse-green { 0% { box-shadow: 0 0 0 0 rgba(37, 211, 102, 0.7); } 70% { box-shadow: 0 0 0 15px rgba(37, 211, 102, 0); } 100% { box-shadow: 0 0 0 0 rgba(37, 211, 102, 0); } }
     @keyframes float { 0% { transform: translateY(0px) rotateY(-5deg); } 50% { transform: translateY(-10px) rotateY(-5deg); } 100% { transform: translateY(0px) rotateY(-5deg); } }
 
-    /* Emojis & Fogo */
     .emoji-particle { position: fixed; pointer-events: none; font-size: 24px; z-index: 9999; animation: flyOut 1s forwards cubic-bezier(0.25, 0.46, 0.45, 0.94); }
     @keyframes flyOut { 0% { transform: translate(0, 0) scale(0.5); opacity: 1; } 100% { transform: translate(var(--tx), var(--ty)) scale(1.5) rotate(var(--rot)); opacity: 0; } }
     
-    @keyframes firePulse { 0% { transform: scale(1) rotate(0deg); filter: drop-shadow(0 0 0 rgba(255, 100, 0, 0)); } 50% { transform: scale(1.3) rotate(-5deg); filter: drop-shadow(0 0 8px rgba(255, 69, 0, 0.8)); } 100% { transform: scale(1) rotate(0deg); filter: drop-shadow(0 0 0 rgba(255, 100, 0, 0)); } }
     .fire-icon { display: inline-block; animation: firePulse 1.5s infinite ease-in-out; }
+    @keyframes firePulse { 0% { transform: scale(1) rotate(0deg); } 50% { transform: scale(1.3) rotate(-5deg); } 100% { transform: scale(1) rotate(0deg); } }
 
     /* Topbar */
     .topbar {
@@ -80,7 +77,6 @@
     .brand { display: flex; align-items: center; gap: 14px; cursor: pointer; padding: 5px; border-radius: 12px; transition: background 0.2s; }
     .brand:active { background: rgba(255,255,255,0.05); }
     
-    /* LOGO: 1 CLIQUE PARA ADMIN */
     .brand-icon {
       width: 50px; height: 50px; background: transparent; border-radius: 50%;
       display: grid; place-items: center; overflow: hidden;
@@ -562,7 +558,7 @@
                 <h4 style="color:#aaa; font-size:12px; margin-top:20px;">ESTOQUE</h4>
                 <div id="admStock"></div>
 
-                <button class="btn btn-primary" style="margin-top:20px;" onclick="saveAdmin()">💾 Salvar Tudo</button>
+                <button class="btn btn-primary" style="margin-top:20px;" onclick="saveAdmin(event)">💾 Salvar Tudo</button>
             </div>
 
             <!-- Tab Pedidos -->
@@ -761,8 +757,11 @@
       }
   }
 
-  window.saveAdmin = async () => {
-      const btn = event.target; btn.innerText = "Salvando..."; btn.disabled = true;
+  window.saveAdmin = async (e) => {
+      let btn = null;
+      if(e && e.target) btn = e.target;
+      
+      if(btn) { btn.innerText = "Salvando..."; btn.disabled = true; }
       
       // Atualiza config local com o que está nos inputs (caso upZone não tenha pego algo)
       appConfig.isOpenManually = document.getElementById('admOpen').checked;
@@ -781,20 +780,17 @@
           if(el) appConfig.stock[p.id] = el.checked;
       });
 
-      // Zonas já estão em appConfig.deliveryZones via upZone, mas garantimos
-      // (upZone já atualiza o objeto em tempo real, então está ok)
-
       try {
           await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'config', 'store_settings'), appConfig);
-          btn.innerText = "✅ Salvo!"; 
+          if(btn) btn.innerText = "✅ Salvo!"; 
           checkOpenStatus();
           updatePixUI();
-      } catch(e) {
-          btn.innerText = "Erro!";
-          alert("Erro: " + e.message);
+      } catch(error) {
+          if(btn) btn.innerText = "Erro!";
+          alert("Erro: " + error.message);
       }
       
-      setTimeout(()=> { btn.innerText="💾 Salvar Tudo"; btn.disabled = false; }, 2000);
+      if(btn) setTimeout(()=> { btn.innerText="💾 Salvar Tudo"; btn.disabled = false; }, 2000);
   };
 
   window.loadOrders = async () => {
@@ -837,10 +833,11 @@
         </div>`).join('');
         
       const sBox = document.getElementById('admStock');
+      // CORREÇÃO: IDs ÚNICOS PARA O ESTOQUE NO ADMIN
       sBox.innerHTML = products.map(p => `
         <div class="admin-row">
             <span style="font-size:12px;">${p.name}</span>
-            <label class="switch"><input type="checkbox" id="stk_${p.id}" ${appConfig.stock[p.id]!==false?'checked':''} id="admStockSwitch"><span class="slider"></span></label>
+            <label class="switch"><input type="checkbox" id="stk_${p.id}" ${appConfig.stock[p.id]!==false?'checked':''}><span class="slider"></span></label>
         </div>`).join('');
   }
 
@@ -886,19 +883,9 @@
       // Proteção para carregar zonas
       const zones = Array.isArray(appConfig.deliveryZones) ? appConfig.deliveryZones : [];
       
-      // Se estiver vazio, popula. Se não estiver, mantém (para não resetar seleção do usuário se ele já abriu)
-      // MAS se mudou no admin, precisa atualizar. 
-      // Simplificação: sempre re-popula se o length mudou ou se é a primeira vez
-      // Aqui, vamos repopular sempre que abrir o modal (updateTotals chama isso)
-      
-      // Salva seleção atual
-      const currentVal = sel.value;
-      
-      sel.innerHTML = zones.map(z => `<option value="${z.price}">${z.name} (${formatMoney(z.price)})</option>`).join('');
-      
-      // Restaura seleção se possível
-      if(currentVal) sel.value = currentVal;
-      
+      if(sel.options.length === 0 && zones.length > 0) {
+          sel.innerHTML = zones.map(z => `<option value="${z.price}">${z.name} (${formatMoney(z.price)})</option>`).join('');
+      }
       const delPrice = parseFloat(sel.value || 0);
       document.getElementById('modalTotal').innerText = formatMoney(totalProd + delPrice);
   }
