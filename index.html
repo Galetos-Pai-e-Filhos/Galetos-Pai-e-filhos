@@ -13,11 +13,11 @@
 
   <style>
     :root{
-      /* --- DESIGN ORIGINAL (PREMIUM) --- */
+      /* --- DESIGN PREMIUM --- */
       --bg: #050505;
       --surface: #18181b;
       --surface-glass: rgba(20, 20, 25, 0.75); 
-      --modal-glass: rgba(15, 15, 20, 0.95);
+      --modal-glass: rgba(15, 15, 20, 0.96);
       --text: #ffffff;
       --text-sec: #a1a1aa;
       --border: rgba(255,255,255,0.1);
@@ -39,6 +39,7 @@
     body {
       margin: 0; font-family: 'Inter', sans-serif;
       background-color: var(--bg); color: var(--text);
+      /* Fundo com profundidade */
       background-image: 
         radial-gradient(circle at 100% 0%, rgba(255,193,7,0.06) 0%, transparent 40%),
         radial-gradient(circle at 0% 100%, rgba(255,193,7,0.03) 0%, transparent 40%);
@@ -77,6 +78,7 @@
     .brand { display: flex; align-items: center; gap: 14px; cursor: pointer; padding: 5px; border-radius: 12px; transition: background 0.2s; }
     .brand:active { background: rgba(255,255,255,0.05); }
     
+    /* LOGO: 1 CLIQUE PARA ADMIN */
     .brand-icon {
       width: 50px; height: 50px; background: transparent; border-radius: 50%;
       display: grid; place-items: center; overflow: hidden;
@@ -103,7 +105,8 @@
     .hero-content { animation: fadeInUp 0.8s ease-out 0.2s backwards; }
     .hero-content h2 {
       font-size: 40px; line-height: 1.1; font-weight: 800; margin: 0 0 16px; letter-spacing: -0.02em;
-      background: linear-gradient(to right, #fff, #ccc); -webkit-background-clip: text; color: transparent;
+      color: #FFC107; 
+      text-shadow: 0 0 20px rgba(255, 193, 7, 0.4); 
     }
     .hero-content p { font-size: 16px; color: var(--text-sec); line-height: 1.6; margin: 0 0 24px; max-width: 95%; }
     
@@ -464,22 +467,39 @@
              <span>Adicionais</span>
              <span id="modalExtras">R$ 0,00</span>
            </div>
-           <div style="display:flex; justify-content:space-between; margin-bottom:16px; align-items:center;">
-             <span style="color:var(--text-sec); font-size:14px;">Entrega</span>
-             <select id="deliverySelect" class="modal-input" style="width: auto; padding: 8px 12px; font-size: 13px;" onchange="window.updateTotals()">
-               <!-- Preenchido via JS -->
-             </select>
+           
+           <!-- Botões de Método de Entrega -->
+           <div style="display:flex; gap:10px; margin-bottom: 16px;">
+             <button type="button" id="btnDelivery" class="btn btn-primary" style="flex:1; padding:10px;" onclick="window.setDeliveryMethod('entrega')">🛵 Entrega</button>
+             <button type="button" id="btnPickup" class="btn btn-sec" style="flex:1; padding:10px;" onclick="window.setDeliveryMethod('retirada')">🏪 Retirada</button>
            </div>
+
            <div style="display:flex; justify-content:space-between; font-size:20px; font-weight:800; color:var(--brand); border-top: 1px dashed rgba(255,255,255,0.1); padding-top: 15px;">
              <span>Total</span>
              <span id="modalTotal">R$ 0,00</span>
            </div>
         </div>
+
         <h4 style="margin: 24px 0 16px; font-size: 14px; text-transform: uppercase; color: var(--text-sec); letter-spacing: 0.05em; border-bottom: 1px solid var(--border); padding-bottom: 8px;">Seus Dados</h4>
+        
         <div class="input-group"><label>Nome Completo</label><input type="text" id="clientName" class="modal-input" placeholder="Seu nome"></div>
         <div class="input-group"><label>Telefone</label><input type="tel" id="clientPhone" class="modal-input" placeholder="(XX) 9XXXX-XXXX" maxlength="15"></div>
+        
+        <div id="deliveryFields">
+            <div class="input-group">
+              <label>Bairro da Entrega</label>
+              <select id="deliverySelect" class="modal-input" onchange="window.updateTotals()">
+                <!-- Preenchido via JS -->
+              </select>
+            </div>
+            <div class="input-group" id="addressGroup">
+              <label>Endereço Completo</label>
+              <input type="text" id="clientAddress" class="modal-input" placeholder="Rua, Número, Ponto de Referência...">
+            </div>
+        </div>
+
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
-          <div class="input-group"><label>Pagamento</label><select id="paymentMethod" class="modal-input"><option value="Pix">Pix</option><option value="Cartão">Cartão</option><option value="Dinheiro">Dinheiro</option></select></div>
+          <div class="input-group"><label>Pagamento</label><select id="paymentMethod" class="modal-input" onchange="window.togglePay()"><option value="Pix">Pix</option><option value="Cartão">Cartão</option><option value="Dinheiro">Dinheiro</option></select></div>
           <div class="input-group" id="changeGroup" style="display:none;"><label>Troco para</label><input type="tel" id="payChange" class="modal-input" placeholder="R$ 0,00"></div>
         </div>
 
@@ -495,10 +515,9 @@
             </div>
         </div>
 
-        <div class="input-group"><label>Endereço</label><input type="text" id="clientAddress" class="modal-input" placeholder="Rua, Número, Bairro..."></div>
       </div>
       <div class="modal-footer">
-        <button class="btn btn-primary" style="width:100%; justify-content: center; height: 50px;" onclick="window.sendOrder()">Enviar Pedido no WhatsApp</button>
+        <button class="btn btn-primary" style="width:100%; justify-content: center; height: 50px;" onclick="window.sendOrder(event)">Enviar Pedido no WhatsApp</button>
       </div>
     </div>
   </div>
@@ -511,7 +530,6 @@
         <button class="close-btn" onclick="window.closeAdmin()">✕</button>
       </div>
       <div class="modal-body" id="adminBody">
-        <!-- Conteúdo do Admin -->
         <div id="adminLogin" style="text-align:center; padding:20px;">
             <div style="font-size: 40px; margin-bottom: 10px;">🔒</div>
             <input type="password" id="adminPass" class="modal-input" placeholder="Senha do Admin" style="text-align:center;">
@@ -524,7 +542,6 @@
                 <button class="admin-tab" onclick="switchAdmin('orders')">Pedidos</button>
             </div>
 
-            <!-- Tab Config -->
             <div id="adm-config" class="admin-section active">
                 <div class="admin-row">
                     <span>Forçar Loja Aberta</span>
@@ -553,17 +570,16 @@
 
                 <h4 style="color:#aaa; font-size:12px; margin-top:20px;">BAIRROS E TAXAS</h4>
                 <div id="admZones"></div>
-                <button class="btn btn-sec" style="padding:8px; margin-top:5px; width:auto;" onclick="addZone()">+ Bairro</button>
+                <button class="btn btn-sec" style="padding:8px; margin-top:5px; width:auto;" onclick="window.addZone()">+ Bairro</button>
 
                 <h4 style="color:#aaa; font-size:12px; margin-top:20px;">ESTOQUE</h4>
                 <div id="admStock"></div>
 
-                <button class="btn btn-primary" style="margin-top:20px;" onclick="saveAdmin(event)">💾 Salvar Tudo</button>
+                <button class="btn btn-primary" style="margin-top:20px;" onclick="window.saveAdmin(event)">💾 Salvar Tudo</button>
             </div>
 
-            <!-- Tab Pedidos -->
             <div id="adm-orders" class="admin-section">
-                <button class="btn btn-sec" onclick="loadOrders()" style="margin-bottom:10px;">↻ Atualizar</button>
+                <button class="btn btn-sec" onclick="window.loadOrders()" style="margin-bottom:10px;">↻ Atualizar</button>
                 <div id="ordersList"></div>
             </div>
         </div>
@@ -574,18 +590,32 @@
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
   import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-  import { getFirestore, doc, onSnapshot, setDoc, addDoc, collection, getDocs, query, orderBy, limit } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+  import { getFirestore, doc, onSnapshot, setDoc, addDoc, collection, getDocs, query } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-  const firebaseConfig = { apiKey: "AIzaSyCzekvqmEji0fqfXrhPIQFr-xELAU8EmTs", authDomain: "galeto-1dc17.firebaseapp.com", projectId: "galeto-1dc17", storageBucket: "galeto-1dc17.firebasestorage.app", messagingSenderId: "777086839092", appId: "1:777086839092:web:042261c5ce1f152a4c9d61" };
+  // CONFIGURAÇÃO DO FIREBASE
+  let firebaseConfig;
+  let appId = 'galeteria-pais-filhos';
+  
+  if (typeof __firebase_config !== 'undefined') {
+    firebaseConfig = JSON.parse(__firebase_config);
+    if (typeof __app_id !== 'undefined') appId = __app_id;
+  } else {
+    firebaseConfig = { 
+        apiKey: "AIzaSyCzekvqmEji0fqfXrhPIQFr-xELAU8EmTs", 
+        authDomain: "galeto-1dc17.firebaseapp.com", 
+        projectId: "galeto-1dc17", 
+        storageBucket: "galeto-1dc17.firebasestorage.app", 
+        messagingSenderId: "777086839092", 
+        appId: "1:777086839092:web:042261c5ce1f152a4c9d61" 
+    };
+  }
   
   const app = initializeApp(firebaseConfig);
   const auth = getAuth(app);
   const db = getFirestore(app);
-  const appId = 'galeteria-pais-filhos';
   const WHATSAPP = "5579988100417";
   const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyXPG30IQSfBWDxaHh_7m5Z_ZYnuFcoWNqzv-WqePbtBjSPQkh3Y5wyEgwOpcDbALkqkw/exec"; 
 
-  // --- DADOS PADRÃO (FALLBACK) ---
   const defaultZones = [
       { name: "Albano Franco", price: 2.00 },
       { name: "Marcos Freire 1", price: 3.00 },
@@ -629,9 +659,6 @@
     { id: "bebidas", label: "Bebidas" }
   ];
 
-  const extras = [];
-
-  // Configuração padrão incluindo o Pix atual e Bairros
   let appConfig = { 
       isOpenManually: false, 
       isClosedManually: false, 
@@ -648,26 +675,54 @@
   window.activeCat = 'todos';
 
   // --- INIT AUTH ---
-  signInAnonymously(auth);
+  const initAuth = async () => {
+    if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+      await signInWithCustomToken(auth, __initial_auth_token);
+    } else {
+      await signInAnonymously(auth);
+    }
+  };
+  initAuth();
   onAuthStateChanged(auth, (u) => { if(u) subscribeToConfig(); });
 
   // --- FUNÇÕES APP CLIENTE ---
+  window.deliveryMethod = 'entrega';
+
+  window.setDeliveryMethod = (method) => {
+      window.deliveryMethod = method;
+      const btnDel = document.getElementById('btnDelivery');
+      const btnPic = document.getElementById('btnPickup');
+      const fields = document.getElementById('deliveryFields');
+      
+      if(method === 'entrega') {
+          btnDel.className = 'btn btn-primary';
+          btnPic.className = 'btn btn-sec';
+          fields.style.display = 'block';
+      } else {
+          btnDel.className = 'btn btn-sec';
+          btnPic.className = 'btn btn-primary';
+          fields.style.display = 'none';
+      }
+      window.updateTotals();
+  };
+
   window.add = (id, e) => {
       cart[id] = (cart[id]||0)+1; 
       renderCartFloat();
-      // Emojis
-      const emojis = ['🍗','🍟','🥤','😋'];
-      for(let i=0;i<8;i++){
-          const el = document.createElement('div');
-          el.className = 'emoji-particle';
-          el.innerText = emojis[Math.floor(Math.random()*emojis.length)];
-          el.style.left=e.clientX+'px'; el.style.top=e.clientY+'px';
-          const angle = Math.random() * Math.PI * 2;
-          const velocity = 60 + Math.random() * 80;
-          el.style.setProperty('--tx', Math.cos(angle) * velocity + 'px');
-          el.style.setProperty('--ty', Math.sin(angle) * velocity + 'px');
-          el.style.setProperty('--rot', (Math.random() * 360 - 180) + 'deg');
-          document.body.appendChild(el); setTimeout(()=>el.remove(),1000);
+      if(e) {
+          const emojis = ['🍗','🍟','🥤','😋'];
+          for(let i=0;i<8;i++){
+              const el = document.createElement('div');
+              el.className = 'emoji-particle';
+              el.innerText = emojis[Math.floor(Math.random()*emojis.length)];
+              el.style.left=e.clientX+'px'; el.style.top=e.clientY+'px';
+              const angle = Math.random() * Math.PI * 2;
+              const velocity = 60 + Math.random() * 80;
+              el.style.setProperty('--tx', Math.cos(angle) * velocity + 'px');
+              el.style.setProperty('--ty', Math.sin(angle) * velocity + 'px');
+              el.style.setProperty('--rot', (Math.random() * 360 - 180) + 'deg');
+              document.body.appendChild(el); setTimeout(()=>el.remove(),1000);
+          }
       }
       showToast();
   };
@@ -677,373 +732,311 @@
   window.closeModal = () => { document.getElementById('cartModal').classList.remove('open'); };
   window.closeCart = () => { document.getElementById('cartModal').classList.remove('open'); };
   window.scrollToMenu = () => document.getElementById('menu').scrollIntoView({behavior:'smooth'});
-  window.togglePay = () => { document.getElementById('payChange').style.display = document.getElementById('paymentMethod').value === 'Dinheiro' ? 'block' : 'none'; };
+  window.togglePay = () => { 
+      const method = document.getElementById('paymentMethod').value;
+      const group = document.getElementById('changeGroup');
+      if(group) group.style.display = method === 'Dinheiro' ? 'block' : 'none';
+      
+      const pixGroup = document.getElementById('pixGroup');
+      if(pixGroup) pixGroup.style.display = method === 'Pix' ? 'block' : 'none';
+  };
   window.copyPix = () => { document.getElementById('pixKeyInput').select(); document.execCommand('copy'); alert("Chave Copiada!"); };
-  window.updateTotals = () => renderCartModal(); 
+
+  window.updateTotals = () => {
+      renderCartModal(); 
+  };
+  
   window.filterMenu = renderMenu;
 
   // --- FUNÇÕES ADMIN ---
   window.openAdminLogin = () => { 
       const modal = document.getElementById('adminModalOverlay');
       if (modal) modal.classList.add('open'); 
-      else alert("Erro ao abrir painel. Recarregue a página.");
   };
   window.closeAdmin = () => { document.getElementById('adminModalOverlay').classList.remove('open'); };
-  
   window.checkAdmin = () => {
       const pass = document.getElementById('adminPass').value.trim();
       if(pass === "galetopaiefilho123") {
           document.getElementById('adminLogin').style.display = 'none';
           document.getElementById('adminContent').style.display = 'block';
-          // Tenta renderizar, se falhar por falta de dados no banco, renderiza com defaults
-          try {
-              renderAdmin();
-              window.switchAdmin('config'); // Força a aba config a aparecer
-          } catch(e) {
-              console.error("Erro render admin, usando defaults", e);
-          }
-      } else {
-          alert("Senha incorreta! Tente: galetopaiefilho123");
-      }
+          try { renderAdmin(); window.switchAdmin('config'); } catch(e) { console.error(e); }
+      } else { alert("Senha incorreta!"); }
   };
-  
-  // Permitir Enter no Input de Senha
-  document.getElementById('adminPass').addEventListener('keypress', function (e) {
-    if (e.key === 'Enter') {
-      window.checkAdmin();
-    }
-  });
-
+  document.getElementById('adminPass').addEventListener('keypress', function (e) { if (e.key === 'Enter') window.checkAdmin(); });
   window.switchAdmin = (tab) => {
       document.querySelectorAll('.admin-section').forEach(e=>e.classList.remove('active'));
-      document.getElementById('adm-'+tab).classList.add('active');
+      const target = document.getElementById('adm-'+tab);
+      if(target) target.classList.add('active');
       document.querySelectorAll('.admin-tab').forEach(e=>e.classList.remove('active'));
-      event.target.classList.add('active');
-      if(tab==='orders') loadOrders();
   };
-
   window.addZone = async () => { 
       if(!appConfig.deliveryZones) appConfig.deliveryZones=[]; 
       appConfig.deliveryZones.push({name:"Novo Bairro", price:5}); 
-      renderAdmin(); 
-      // Salva automaticamente para evitar perda de dados
-      await saveZonesOnly();
+      renderAdmin(); await saveZonesOnly();
   };
-  
   window.delZone = async (i) => { 
       if(!appConfig.deliveryZones) return;
-      if(confirm("Tem certeza que deseja remover este bairro?")) { 
-          appConfig.deliveryZones.splice(i,1); 
-          renderAdmin(); 
-          // Salva automaticamente
-          await saveZonesOnly();
-      } 
+      appConfig.deliveryZones.splice(i,1); 
+      renderAdmin(); await saveZonesOnly();
   };
-  
   window.upZone = (i,f,v) => { 
-      // Atualiza localmente enquanto digita
-      appConfig.deliveryZones[i][f] = (f==='price' ? parseFloat(v) : v); 
+      let val = v;
+      if(f==='price') { val = parseFloat(v); if(isNaN(val)) val = 0; }
+      if(appConfig.deliveryZones[i]) appConfig.deliveryZones[i][f] = val; 
   };
-
-  // Função auxiliar para salvar apenas as zonas (mais rápido e seguro para add/del)
   async function saveZonesOnly() {
       try {
           const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'config', 'store_settings');
-          // Atualiza apenas o campo deliveryZones no banco
           await setDoc(docRef, { deliveryZones: appConfig.deliveryZones }, { merge: true });
           showToast("✅ Lista de bairros atualizada!");
-      } catch(e) {
-          alert("Erro ao salvar: " + e.message);
-      }
+      } catch(e) { console.log(e); }
   }
-
   window.saveAdmin = async (e) => {
-      let btn = null;
-      if(e && e.target) btn = e.target;
-      
+      let btn = e ? e.target : null;
       if(btn) { btn.innerText = "Salvando..."; btn.disabled = true; }
-      
-      // Atualiza config local com o que está nos inputs (caso upZone não tenha pego algo)
       appConfig.isOpenManually = document.getElementById('admOpen').checked;
       appConfig.isClosedManually = document.getElementById('admClose').checked;
-      
-      // Pix
-      appConfig.pix = {
-          key: document.getElementById('admPixKey').value,
-          name: document.getElementById('admPixName').value,
-          bank: document.getElementById('admPixBank').value
-      };
-      
-      // Estoque
-      products.forEach(p => {
-          const el = document.getElementById('stk_'+p.id);
-          if(el) appConfig.stock[p.id] = el.checked;
-      });
-
+      appConfig.pix = { key: document.getElementById('admPixKey').value, name: document.getElementById('admPixName').value, bank: document.getElementById('admPixBank').value };
+      products.forEach(p => { const el = document.getElementById('stk_'+p.id); if(el) appConfig.stock[p.id] = el.checked; });
       try {
           await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'config', 'store_settings'), appConfig);
-          if(btn) btn.innerText = "✅ Salvo!"; 
-          checkOpenStatus();
-          updatePixUI();
-      } catch(error) {
-          if(btn) btn.innerText = "Erro!";
-          alert("Erro: " + error.message);
-      }
-      
+          if(btn) btn.innerText = "✅ Salvo!"; checkOpenStatus(); updatePixUI();
+      } catch(error) { if(btn) btn.innerText = "Erro!"; alert("Erro: " + error.message); }
       if(btn) setTimeout(()=> { btn.innerText="💾 Salvar Tudo"; btn.disabled = false; }, 2000);
   };
-
+  
+  // FIX: Busca Segura (Sem ordenação complexa no firebase)
   window.loadOrders = async () => {
       const list = document.getElementById('ordersList');
+      if(!list) return;
       list.innerHTML = "Carregando...";
-      const q = query(collection(db, 'artifacts', appId, 'public', 'data', 'orders'), orderBy('timestamp', 'desc'), limit(15));
-      const snap = await getDocs(q);
-      list.innerHTML = "";
-      snap.forEach(d => {
-          const o = d.data();
-          list.innerHTML += `<div class="order-item-admin">
-            <strong>#${o.numero} - ${o.cliente}</strong><br>
-            ${o.detalhes}<br>
-            <span style="color:#FFC107">${o.pagamento}</span>
-          </div>`;
-      });
+      try {
+          // Busca todos para ordenar no JS (evita erros de Index no Firebase)
+          const snap = await getDocs(collection(db, 'artifacts', appId, 'public', 'data', 'orders'));
+          if(snap.empty) { list.innerHTML = "Sem pedidos recentes."; return; }
+          
+          let orders = [];
+          snap.forEach(d => orders.push(d.data()));
+          
+          // Ordena no JS
+          orders.sort((a, b) => {
+              let ta = a.timestamp?.seconds || 0;
+              let tb = b.timestamp?.seconds || 0;
+              return tb - ta; 
+          });
+          
+          // Pega apenas os últimos 15
+          orders = orders.slice(0, 15);
+          
+          list.innerHTML = "";
+          orders.forEach(o => {
+              list.innerHTML += `<div class="order-item-admin"><strong>#${o.numero} - ${o.cliente}</strong><br>${o.detalhes}<br><span style="color:#FFC107">${o.pagamento}</span></div>`;
+          });
+      } catch(e) { 
+          console.error(e);
+          list.innerHTML = "Erro ao carregar pedidos."; 
+      }
   };
 
   function renderAdmin() {
-      // Define o estado dos 2 switches
       document.getElementById('admOpen').checked = appConfig.isOpenManually || false;
       document.getElementById('admClose').checked = appConfig.isClosedManually || false;
-      
-      // Preenche Pix com proteção contra nulos
       if(appConfig.pix) {
           document.getElementById('admPixKey').value = appConfig.pix.key || "";
           document.getElementById('admPixName').value = appConfig.pix.name || "";
           document.getElementById('admPixBank').value = appConfig.pix.bank || "";
       }
-
       const zBox = document.getElementById('admZones');
-      // Proteção para zonas
       const zones = Array.isArray(appConfig.deliveryZones) ? appConfig.deliveryZones : [];
-      
       zBox.innerHTML = zones.map((z,i) => `
         <div class="admin-row" style="gap:10px;">
             <button type="button" onclick="window.delZone(${i})" style="background:#EF4444; color:#fff; border:none; width:40px; height:40px; border-radius:8px; flex-shrink:0; display:flex; align-items:center; justify-content:center; font-weight:bold; font-size:18px; cursor:pointer;">🗑️</button>
             <input type="text" value="${z.name}" onchange="window.upZone(${i},'name',this.value)" class="modal-input" style="flex:1; margin:0;">
             <input type="number" value="${z.price}" onchange="window.upZone(${i},'price',this.value)" class="modal-input" style="width:70px; margin:0;">
         </div>`).join('');
-        
       const sBox = document.getElementById('admStock');
-      // CORREÇÃO: IDs ÚNICOS PARA O ESTOQUE NO ADMIN
-      sBox.innerHTML = products.map(p => `
-        <div class="admin-row">
-            <span style="font-size:12px;">${p.name}</span>
-            <label class="switch"><input type="checkbox" id="stk_${p.id}" ${appConfig.stock[p.id]!==false?'checked':''}><span class="slider"></span></label>
-        </div>`).join('');
+      sBox.innerHTML = products.map(p => `<div class="admin-row"><span style="font-size:12px;">${p.name}</span><label class="switch"><input type="checkbox" id="stk_${p.id}" ${appConfig.stock[p.id]!==false?'checked':''} id="admStockSwitch"><span class="slider"></span></label></div>`).join('');
   }
 
   // --- INTERNOS ---
   function formatMoney(v) { return "R$ " + parseFloat(v||0).toFixed(2).replace('.', ','); }
   function showToast(msg) { 
       const t=document.getElementById('toast'); 
-      if(msg) t.innerText = msg;
-      t.style.opacity=1; 
-      setTimeout(()=> {
-          t.style.opacity=0;
-          setTimeout(() => t.innerHTML = '<span>✅</span> Item adicionado!', 300); // Reset
-      }, 2000); 
+      if(msg) t.innerHTML = msg; t.style.opacity=1; 
+      setTimeout(()=> { t.style.opacity=0; setTimeout(() => t.innerHTML = '<span>✅</span> Item adicionado!', 300); }, 2000); 
   }
-
   function renderCartFloat() {
       let total = 0; 
       for(let id in cart) total += (products.find(p=>p.id==id).price * cart[id]);
       document.getElementById('floatTotal').innerText = formatMoney(total);
       document.getElementById('cartFloat').classList.toggle('show', total > 0);
   }
-
   function renderCartModal() {
       const list = document.getElementById('cartItemsList');
+      if(!list) return;
       list.innerHTML = "";
       let totalProd = 0;
       for(let id in cart) {
           const p = products.find(x=>x.id==id);
           totalProd += p.price * cart[id];
-          list.innerHTML += `
-            <div style="display:flex; justify-content:space-between; margin-bottom:10px; border-bottom:1px solid #222; padding-bottom:10px;">
-                <div>${cart[id]}x ${p.name}</div>
-                <div style="font-weight:700;">${formatMoney(p.price*cart[id])}</div>
-                <div class="qty-controls">
-                    <button class="qty-btn" onclick="window.rem(${id})">-</button>
-                    <button class="qty-btn" onclick="window.add(${id}, event)">+</button>
-                </div>
-            </div>`;
+          list.innerHTML += `<div style="display:flex; justify-content:space-between; margin-bottom:10px; border-bottom:1px solid #222; padding-bottom:10px;"><div>${cart[id]}x ${p.name}</div><div style="font-weight:700;">${formatMoney(p.price*cart[id])}</div><div class="qty-controls"><button class="qty-btn" onclick="window.rem(${id})">-</button><button class="qty-btn" onclick="window.add(${id}, event)">+</button></div></div>`;
       }
       
       const sel = document.getElementById('deliverySelect');
-      
-      // Proteção para carregar zonas
-      const zones = Array.isArray(appConfig.deliveryZones) ? appConfig.deliveryZones : [];
-      
-      if(sel.options.length === 0 && zones.length > 0) {
+      if (sel) {
+          const zones = Array.isArray(appConfig.deliveryZones) ? appConfig.deliveryZones : [];
+          const currentVal = sel.value;
+          
           sel.innerHTML = zones.map(z => `<option value="${z.price}">${z.name} (${formatMoney(z.price)})</option>`).join('');
+          
+          if(currentVal && currentVal !== "") sel.value = currentVal;
       }
-      const delPrice = parseFloat(sel.value || 0);
+      
+      const delPrice = window.deliveryMethod === 'retirada' ? 0 : parseFloat(sel?.value || 0);
       document.getElementById('modalTotal').innerText = formatMoney(totalProd + delPrice);
   }
 
   function checkOpenStatus() {
-    const now = new Date();
-    const day = now.getDay(); // 0=Dom, 6=Sáb
-    const hour = now.getHours();
-
-    // Lógica Automática: Sáb e Dom, 09h às 15h
+    const now = new Date(); const day = now.getDay(); const hour = now.getHours();
     const isWeekend = (day === 0 || day === 6);
     const isTime = (hour >= appConfig.hours.galeto.start && hour < appConfig.hours.galeto.end);
-    const autoOpen = isWeekend && isTime;
-
-    // Lógica de Prioridade:
-    // 1. Se "Forçar Fechado" estiver ligado -> FECHADO
-    if (appConfig.isClosedManually) return false;
-    
-    // 2. Se "Forçar Aberto" estiver ligado -> ABERTO
-    if (appConfig.isOpenManually) return true;
-    
-    // 3. Senão -> AUTOMÁTICO
-    return autoOpen;
+    if (appConfig.isClosedManually) return false; if (appConfig.isOpenManually) return true;
+    return isWeekend && isTime;
   }
-
   function updatePixUI() {
       if(appConfig.pix) {
-          const keyInput = document.getElementById('pixKeyInput');
-          if(keyInput) keyInput.value = appConfig.pix.key || "";
-          
-          const nameDisplay = document.getElementById('pixNameDisplay');
-          if(nameDisplay) nameDisplay.innerText = appConfig.pix.name || "Nome Titular";
-          
-          const bankDisplay = document.getElementById('pixBankDisplay');
-          if(bankDisplay) bankDisplay.innerText = appConfig.pix.bank || "Banco";
+          const keyInput = document.getElementById('pixKeyInput'); if(keyInput) keyInput.value = appConfig.pix.key || "";
+          const nameDisplay = document.getElementById('pixNameDisplay'); if(nameDisplay) nameDisplay.innerText = appConfig.pix.name || "Nome Titular";
+          const bankDisplay = document.getElementById('pixBankDisplay'); if(bankDisplay) bankDisplay.innerText = appConfig.pix.bank || "Banco";
       }
   }
-
   function subscribeToConfig() {
-    const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'config', 'store_settings');
-    onSnapshot(docRef, (s) => {
+    onSnapshot(doc(db, 'artifacts', appId, 'public', 'data', 'config', 'store_settings'), (s) => {
       if (s.exists()) {
-        const d = s.data();
-        appConfig = { ...appConfig, ...d };
-        if(d.stock) appConfig.stock = { ...appConfig.stock, ...d.stock };
-        
-        // Update UI Status
-        const isOpen = checkOpenStatus();
-        const badge = document.getElementById('statusBadge');
-        const txt = document.getElementById('statusText');
-        
-        if(isOpen) { badge.className='status-chip open'; txt.innerText="Aberto"; }
-        else { badge.className='status-chip closed'; txt.innerText="Fechado"; }
-        
-        renderMenu();
-        updatePixUI();
-        
-        // Se o modal estiver aberto, atualiza para refletir mudanças externas
-        if(document.getElementById('adminModalOverlay').classList.contains('open')) {
-            try { renderAdmin(); } catch(e) {}
-        }
+        const d = s.data(); appConfig = { ...appConfig, ...d }; if(d.stock) appConfig.stock = { ...appConfig.stock, ...d.stock };
+        const isOpen = checkOpenStatus(); const badge = document.getElementById('statusBadge'); const txt = document.getElementById('statusText');
+        if(isOpen) { badge.className='status-chip open'; txt.innerText="Aberto"; } else { badge.className='status-chip closed'; txt.innerText="Fechado"; }
+        renderMenu(); updatePixUI();
+        if(document.getElementById('adminModalOverlay').classList.contains('open')) { try { renderAdmin(); } catch(e) {} }
       }
     });
   }
-
   function renderMenu() {
-      const grid = document.getElementById('menuGrid');
-      if (!grid) return;
-      
-      const searchInput = document.getElementById('searchInput');
-      const search = searchInput ? searchInput.value.toLowerCase() : '';
-      
-      const filtered = products.filter(p => {
-          const matchCat = p.cat === (window.activeCat || 'todos') || window.activeCat === 'todos';
-          const matchSearch = p.name.toLowerCase().includes(search);
-          return matchCat && matchSearch;
-      });
-      grid.innerHTML = filtered.map(p => `
-        <div class="card ${appConfig.stock[p.id] === false ? 'disabled' : ''}">
-            <div class="card-top"><div class="card-thumb">${p.img}</div><div><div class="card-title">${p.name}</div><div class="card-desc">${p.desc}</div></div></div>
-            <div class="card-price-row"><div class="price">${formatMoney(p.price)}</div><button class="add-btn" onclick="add(${p.id}, event)">+</button></div>
-        </div>`).join('');
+      const grid = document.getElementById('menuGrid'); if (!grid) return;
+      const searchInput = document.getElementById('searchInput'); const search = searchInput ? searchInput.value.toLowerCase() : '';
+      const filtered = products.filter(p => { const matchCat = p.cat === (window.activeCat || 'todos') || window.activeCat === 'todos'; return matchCat && p.name.toLowerCase().includes(search); });
+      grid.innerHTML = filtered.map(p => `<div class="card ${appConfig.stock[p.id] === false ? 'disabled' : ''}"><div class="card-top"><div class="card-thumb">${p.img}</div><div><div class="card-title">${p.name}</div><div class="card-desc">${p.desc}</div></div></div><div class="card-price-row"><div class="price">${formatMoney(p.price)}</div><button class="add-btn" onclick="add(${p.id}, event)">+</button></div></div>`).join('');
   }
 
-  // --- SEND ORDER (INSTANTÂNEO) ---
-  window.sendOrder = async () => {
-      // Verifica Abertura Antes de Enviar
-      const isOpen = checkOpenStatus();
-      if(!isOpen) { 
-          alert("🔒 LOJA FECHADA\nEstamos fechados no momento. Horário: Sáb e Dom (09h-15h)."); 
-          return; 
-      }
-      
-      const btn = event.target; btn.innerText = "Enviando..."; btn.disabled = true;
-
-      // 1. Abre Janela Imediatamente (Anti-Bloqueio)
-      const waWindow = window.open('', '_blank');
-      if(waWindow) waWindow.document.write('<body style="background:#000;color:#fff;display:flex;justify-content:center;align-items:center;height:100vh;font-family:sans-serif;"><h2>A gerar pedido...</h2></body>');
-
-      // 2. Dados
-      const name = document.getElementById('clientName').value;
-      const phone = document.getElementById('clientPhone').value;
-      const address = document.getElementById('clientAddress').value;
-      const pay = document.getElementById('paymentMethod').value;
-      const change = document.getElementById('payChange').value;
-      const deliveryEl = document.getElementById('deliverySelect');
-      
-      // Proteção contra select vazio
-      let delPrice = 0;
-      let delText = "Retirada/A Combinar";
-      
-      if(deliveryEl.options.length > 0 && deliveryEl.selectedIndex >= 0) {
-          delPrice = parseFloat(deliveryEl.value);
-          delText = deliveryEl.options[deliveryEl.selectedIndex].text.split('(')[0].trim();
+  // --- SEND ORDER ---
+  window.sendOrder = async (e) => {
+      // VALIDAÇÃO 1: Carrinho Vazio
+      if(Object.keys(cart).length === 0) {
+          alert("O seu carrinho está vazio! Adicione algum produto antes de finalizar.");
+          return;
       }
 
-      const obs = document.getElementById('obsInput').value;
+      try {
+          const isOpen = checkOpenStatus();
+          if(!isOpen) { alert("🔒 LOJA FECHADA\nEstamos fechados no momento. Horário: Sáb e Dom (09h-15h)."); return; }
+          
+          let btn = e ? e.target : null;
+          if(btn) { btn.innerText = "Enviando..."; btn.disabled = true; }
 
-      if(!name || !address) { alert("Preencha dados!"); btn.disabled=false; btn.innerText="Finalizar"; if(waWindow) waWindow.close(); return; }
+          const name = document.getElementById('clientName').value.trim();
+          const phone = document.getElementById('clientPhone').value;
+          const address = document.getElementById('clientAddress') ? document.getElementById('clientAddress').value.trim() : '';
+          const pay = document.getElementById('paymentMethod').value;
+          const change = document.getElementById('payChange') ? document.getElementById('payChange').value : '';
+          const deliveryEl = document.getElementById('deliverySelect');
+          
+          let isDelivery = window.deliveryMethod === 'entrega';
+          let delPrice = 0;
+          let delText = "Retirada na Loja";
+          
+          if(isDelivery && deliveryEl && deliveryEl.selectedIndex >= 0) {
+              delPrice = parseFloat(deliveryEl.value);
+              delText = deliveryEl.options[deliveryEl.selectedIndex].text.split('(')[0].trim();
+          }
 
-      // 3. Número Local (Rápido)
-      let num = parseInt(localStorage.getItem('orderNum') || 0) + 1;
-      localStorage.setItem('orderNum', num);
-      let orderNum = num.toString().padStart(2,'0');
+          const obs = document.getElementById('obsInput') ? document.getElementById('obsInput').value : '';
 
-      // 4. Monta Mensagem
-      let itemsList = ""; let totalProd = 0;
-      for(let id in cart) { 
-          const p = products.find(x=>x.id==id); 
-          totalProd += p.price * cart[id];
-          itemsList += `${cart[id]}x ${p.name}\n`;
+          // VALIDAÇÕES 2: Dados do Cliente
+          if(!name || name.length < 2) { 
+              alert("Por favor, preencha o seu Nome Completo."); 
+              if(btn) { btn.disabled=false; btn.innerText="Enviar Pedido no WhatsApp"; }
+              return; 
+          }
+          if(isDelivery && (!address || address.length < 5)) {
+              alert("Por favor, preencha o seu Endereço Completo para a entrega."); 
+              if(btn) { btn.disabled=false; btn.innerText="Enviar Pedido no WhatsApp"; }
+              return; 
+          }
+
+          // FIX: Busca Segura Sequencial 
+          let nextNum = 1;
+          try {
+              const snap = await getDocs(collection(db, 'artifacts', appId, 'public', 'data', 'orders'));
+              let maxNum = 0;
+              snap.forEach(d => {
+                  const o = d.data();
+                  if (o.numero) {
+                      let n = parseInt(o.numero, 10);
+                      if (!isNaN(n) && n > maxNum) maxNum = n;
+                  }
+              });
+              if(maxNum > 0) nextNum = maxNum + 1;
+          } catch(err) {
+              console.log("Erro ao buscar ultimo número, usando fallback", err);
+              nextNum = parseInt(localStorage.getItem('orderNum') || 0, 10) + 1;
+          }
+          
+          localStorage.setItem('orderNum', nextNum); // fallback
+          let orderNum = String(nextNum).padStart(3, '0'); // Ex: 001, 002...
+
+          let itemsList = ""; let totalProd = 0;
+          for(let id in cart) { 
+              const p = products.find(x=>x.id==id); 
+              if(p) { totalProd += p.price * cart[id]; itemsList += `${cart[id]}x ${p.name}\n`; }
+          }
+          const total = totalProd + delPrice;
+          let payTxt = `${pay} ${formatMoney(total)}`;
+          if(pay==='Dinheiro' && change) payTxt += ` (Troco: ${change})`;
+
+          // STRING DE ENDEREÇO CONDICIONAL
+          let addressStr = isDelivery ? `\n📍 Entrega: ${address} - ${delText}` : `\n📍 Retirada na Loja`;
+
+          let msg = `*PEDIDO #${orderNum}*\n\n${itemsList}${addressStr}\n\n💰 ${payTxt}\n\n👤 ${name} - ${phone}`;
+          if(obs) msg += `\n(${obs})`;
+
+          // MELHORIA: Enviar dados do PIX junto da mensagem do whatsapp
+          if (pay === 'Pix' && appConfig.pix) {
+              msg += `\n\n*CHAVE PIX:*\n${appConfig.pix.key}\n(${appConfig.pix.name})`;
+          }
+
+          // Salvar Dados
+          const orderData = { numero: orderNum, data: new Date().toLocaleString(), cliente: name, telefone: phone, valor: total, pagamento: payTxt, endereco: isDelivery ? address : 'Retirada', bairro: delText, detalhes: itemsList.replace(/\n/g, ', '), entrega: delPrice };
+          addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'orders'), { ...orderData, timestamp: new Date() });
+          fetch(APPS_SCRIPT_URL, { method: 'POST', mode: 'no-cors', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(orderData) });
+
+          setTimeout(() => { 
+              if(btn) { btn.innerText = "Enviar Pedido no WhatsApp"; btn.disabled = false; }
+              window.closeModal(); cart={}; renderCartFloat(); 
+              
+              // Redirecionamento (Mais seguro contra bloqueios de pop-up se feito diretamente no timeout do clique)
+              const waLink = `https://wa.me/${WHATSAPP}?text=${encodeURIComponent(msg)}`;
+              window.location.href = waLink;
+          }, 800);
+
+      } catch (err) {
+          console.error(err); alert("Erro ao enviar. Tente novamente.");
+          if(e && e.target) { e.target.disabled = false; e.target.innerText = "Enviar Pedido no WhatsApp"; }
       }
-      const total = totalProd + delPrice;
-      let payTxt = `${pay} ${formatMoney(total)}`;
-      if(pay==='Dinheiro' && change) payTxt += ` (Troco: ${change})`;
-
-      let msg = `*PEDIDO ${orderNum}*\n\n${itemsList}\n${address} - ${delText}\n\n${payTxt}\n\n${name} - ${phone}`;
-      if(obs) msg += `\n(${obs})`;
-
-      // 5. Redireciona Janela Aberta
-      const waLink = `https://wa.me/${WHATSAPP}?text=${encodeURIComponent(msg)}`;
-      if(waWindow) waWindow.location.href = waLink;
-      else window.location.href = waLink;
-
-      // 6. Salva Background
-      const orderData = { numero: orderNum, data: new Date().toLocaleString(), cliente: name, telefone: phone, valor: total, pagamento: payTxt, endereco: address, bairro: delText, detalhes: itemsList.replace(/\n/g, ', '), entrega: delPrice };
-      addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'orders'), { ...orderData, timestamp: new Date() });
-      fetch(APPS_SCRIPT_URL, { method: 'POST', mode: 'no-cors', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(orderData) });
-
-      // 7. Reset
-      setTimeout(() => { btn.innerText = "Finalizar"; btn.disabled = false; window.closeModal(); cart={}; renderCartFloat(); }, 1000);
   };
 
-  // Render Cats
   document.querySelector('.cat-container').innerHTML = categories.map(c=>`<button class="cat-btn ${c.id==='todos'?'active':''}" onclick="window.setCat('${c.id}')">${c.label}</button>`).join('');
   window.setCat = (c) => { window.activeCat = c; renderMenu(); document.querySelectorAll('.cat-btn').forEach(b => b.classList.toggle('active', b.innerText === categories.find(cat=>cat.id===c).label)); };
 
-  // Init
   renderMenu();
 </script>
 </body>
