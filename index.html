@@ -538,8 +538,8 @@
 
         <div id="adminContent" style="display:none;">
             <div class="admin-tabs">
-                <button class="admin-tab active" onclick="switchAdmin('config')">Loja</button>
-                <button class="admin-tab" onclick="switchAdmin('orders')">Pedidos</button>
+                <button class="admin-tab active" onclick="window.switchAdmin('config')">Loja</button>
+                <button class="admin-tab" onclick="window.switchAdmin('orders')">Pedidos</button>
             </div>
 
             <div id="adm-config" class="admin-section active">
@@ -807,6 +807,9 @@
   
   // FIX: Busca Segura (Sem ordenação complexa no firebase)
   window.loadOrders = async () => {
+      // Proteção garantindo que o Auth foi finalizado com sucesso
+      if(!auth.currentUser) return;
+
       const list = document.getElementById('ordersList');
       if(!list) return;
       list.innerHTML = "Carregando...";
@@ -855,7 +858,8 @@
             <input type="number" value="${z.price}" onchange="window.upZone(${i},'price',this.value)" class="modal-input" style="width:70px; margin:0;">
         </div>`).join('');
       const sBox = document.getElementById('admStock');
-      sBox.innerHTML = products.map(p => `<div class="admin-row"><span style="font-size:12px;">${p.name}</span><label class="switch"><input type="checkbox" id="stk_${p.id}" ${appConfig.stock[p.id]!==false?'checked':''} id="admStockSwitch"><span class="slider"></span></label></div>`).join('');
+      // Correção do ID duplicado na label switch do estoque (Removido id="admStockSwitch")
+      sBox.innerHTML = products.map(p => `<div class="admin-row"><span style="font-size:12px;">${p.name}</span><label class="switch"><input type="checkbox" id="stk_${p.id}" ${appConfig.stock[p.id]!==false?'checked':''}><span class="slider"></span></label></div>`).join('');
   }
 
   // --- INTERNOS ---
@@ -925,7 +929,8 @@
       const grid = document.getElementById('menuGrid'); if (!grid) return;
       const searchInput = document.getElementById('searchInput'); const search = searchInput ? searchInput.value.toLowerCase() : '';
       const filtered = products.filter(p => { const matchCat = p.cat === (window.activeCat || 'todos') || window.activeCat === 'todos'; return matchCat && p.name.toLowerCase().includes(search); });
-      grid.innerHTML = filtered.map(p => `<div class="card ${appConfig.stock[p.id] === false ? 'disabled' : ''}"><div class="card-top"><div class="card-thumb">${p.img}</div><div><div class="card-title">${p.name}</div><div class="card-desc">${p.desc}</div></div></div><div class="card-price-row"><div class="price">${formatMoney(p.price)}</div><button class="add-btn" onclick="add(${p.id}, event)">+</button></div></div>`).join('');
+      // Correção no onclick de add(${p.id}) para window.add(${p.id})
+      grid.innerHTML = filtered.map(p => `<div class="card ${appConfig.stock[p.id] === false ? 'disabled' : ''}"><div class="card-top"><div class="card-thumb">${p.img}</div><div><div class="card-title">${p.name}</div><div class="card-desc">${p.desc}</div></div></div><div class="card-price-row"><div class="price">${formatMoney(p.price)}</div><button class="add-btn" onclick="window.add(${p.id}, event)">+</button></div></div>`).join('');
   }
 
   // --- SEND ORDER ---
@@ -992,7 +997,7 @@
           }
           
           localStorage.setItem('orderNum', nextNum); // fallback
-          let orderNum = String(nextNum).padStart(3, '0'); // Ex: 001, 002...
+          let orderNum = String(nextNum).padStart(2, '0'); // Ex: 01, 02...
 
           let itemsList = ""; let totalProd = 0;
           for(let id in cart) { 
@@ -1004,14 +1009,20 @@
           if(pay==='Dinheiro' && change) payTxt += ` (Troco: ${change})`;
 
           // STRING DE ENDEREÇO CONDICIONAL
-          let addressStr = isDelivery ? `\n📍 Entrega: ${address} - ${delText}` : `\n📍 Retirada na Loja`;
+          let addressStr = "";
+          if (isDelivery) {
+              addressStr = `${address} ${delText} - Entrega`;
+          } else {
+              // Permite mostrar o endereço caso o cliente tenha preenchido mesmo em retirada
+              addressStr = address ? `${address} ${delText} - Retirada` : `Retirada`;
+          }
 
-          let msg = `*PEDIDO #${orderNum}*\n\n${itemsList}${addressStr}\n\n💰 ${payTxt}\n\n👤 ${name} - ${phone}`;
-          if(obs) msg += `\n(${obs})`;
+          let msg = `PEDIDO ${orderNum}\n\n${itemsList}\n${addressStr}\n\n${payTxt}\n\n${name} - ${phone}`;
+          if(obs) msg += `\n\nObs: ${obs}`;
 
-          // MELHORIA: Enviar dados do PIX junto da mensagem do whatsapp
+          // Enviar dados do PIX de forma mais limpa se for o caso
           if (pay === 'Pix' && appConfig.pix) {
-              msg += `\n\n*CHAVE PIX:*\n${appConfig.pix.key}\n(${appConfig.pix.name})`;
+              msg += `\n\nChave PIX: ${appConfig.pix.key}`;
           }
 
           // Salvar Dados
