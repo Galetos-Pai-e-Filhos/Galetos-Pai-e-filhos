@@ -276,6 +276,16 @@
     .close-btn:hover { background: rgba(255,255,255,0.15); }
     .modal-input { width: 100%; background: rgba(0,0,0,0.4); border: 1px solid var(--border); padding: 14px; border-radius: 12px; color: #fff; font-size: 14px; transition: 0.2s; }
     .modal-input:focus { border-color: var(--brand); outline: none; background: rgba(0,0,0,0.6); }
+    
+    /* Estilo exclusivo para selects (Bairro e Pagamento) parecerem clicáveis */
+    select.modal-input {
+      appearance: none; -webkit-appearance: none;
+      background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23FFC107' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+      background-repeat: no-repeat; background-position: right 14px center; background-size: 16px;
+      padding-right: 40px; cursor: pointer;
+    }
+    select.modal-input:hover { border-color: rgba(255, 193, 7, 0.5); }
+
     .input-group { margin-bottom: 16px; }
     .input-group label { display: block; font-size: 12px; color: var(--text-sec); margin-bottom: 6px; font-weight: 600; }
 
@@ -494,7 +504,7 @@
         
         <div id="deliveryFields">
             <div class="input-group">
-              <label>Bairro da Entrega</label>
+              <label>Bairro da Entrega <span style="color: var(--brand); font-size: 10px; font-weight: 700; margin-left: 4px; letter-spacing: 0;">(Toque para alterar 👇)</span></label>
               <select id="deliverySelect" class="modal-input" onchange="window.updateTotals()">
                 <!-- Preenchido via JS -->
               </select>
@@ -960,7 +970,7 @@
           let delPrice = 0;
           let delText = "Retirada na Loja";
           
-          if(isDelivery && deliveryEl && deliveryEl.selectedIndex >= 0) {
+          if(isDelivery && deliveryEl && deliveryEl.options.length > 0 && deliveryEl.selectedIndex >= 0) {
               delPrice = parseFloat(deliveryEl.value);
               delText = deliveryEl.options[deliveryEl.selectedIndex].text.split('(')[0].trim();
           }
