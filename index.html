@@ -78,6 +78,7 @@
     .brand { display: flex; align-items: center; gap: 14px; cursor: pointer; padding: 5px; border-radius: 12px; transition: background 0.2s; }
     .brand:active { background: rgba(255,255,255,0.05); }
     
+    /* LOGO: 1 CLIQUE PARA ADMIN */
     .brand-icon {
       width: 50px; height: 50px; background: transparent; border-radius: 50%;
       display: grid; place-items: center; overflow: hidden;
@@ -186,14 +187,7 @@
       box-shadow: 0 8px 32px rgba(0,0,0,0.3);
     }
     .card:hover { transform: translateY(-4px); border-color: rgba(255,255,255,0.2); box-shadow: 0 15px 30px rgba(0,0,0,0.5); background: rgba(40, 40, 45, 0.8); }
-    
-    /* PRODUTO ESGOTADO */
     .card.disabled { opacity: 0.5; pointer-events: none; filter: grayscale(1); }
-    .card.disabled::after {
-        content: "ESGOTADO"; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(-15deg);
-        background: rgba(0,0,0,0.8); color: var(--danger); font-weight: 900; padding: 10px 20px; border: 2px solid var(--danger);
-        border-radius: 10px; letter-spacing: 2px; font-size: 18px; z-index: 10;
-    }
 
     .card-top { display: flex; gap: 16px; }
     .card-thumb {
@@ -283,6 +277,7 @@
     .modal-input { width: 100%; background: rgba(0,0,0,0.4); border: 1px solid var(--border); padding: 14px; border-radius: 12px; color: #fff; font-size: 14px; transition: 0.2s; }
     .modal-input:focus { border-color: var(--brand); outline: none; background: rgba(0,0,0,0.6); }
     
+    /* Estilo exclusivo para selects (Bairro e Pagamento) parecerem clicáveis */
     select.modal-input {
       appearance: none; -webkit-appearance: none;
       background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23FFC107' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
@@ -293,6 +288,42 @@
 
     .input-group { margin-bottom: 16px; }
     .input-group label { display: block; font-size: 12px; color: var(--text-sec); margin-bottom: 6px; font-weight: 600; }
+
+    /* Admin Styles inside Modal - PREMIUM */
+    .admin-tabs { display: flex; border-bottom: 1px solid var(--border); margin-bottom: 20px; }
+    .admin-tab { flex: 1; padding: 10px; background: none; border: none; color: #666; font-weight: 600; cursor: pointer; border-bottom: 2px solid transparent; transition: 0.3s; }
+    .admin-tab.active { color: var(--brand); border-bottom-color: var(--brand); }
+    .admin-section { display: none; }
+    .admin-section.active { display: block; }
+    
+    .admin-row { 
+        display: flex; justify-content: space-between; align-items: center; 
+        background: rgba(255,255,255,0.03); /* Fundo sutil */
+        padding: 12px; border-radius: 12px; margin-bottom: 8px; border: 1px solid var(--border); 
+        transition: 0.2s;
+    }
+    .admin-row:hover { border-color: rgba(255,255,255,0.2); }
+    
+    .switch { position: relative; width: 44px; height: 24px; }
+    .switch input { opacity: 0; width: 0; height: 0; }
+    .slider { position: absolute; inset: 0; background: #333; border-radius: 34px; transition: .4s; }
+    .slider:before { content: ""; position: absolute; height: 18px; width: 18px; left: 3px; bottom: 3px; background: #fff; border-radius: 50%; transition: .4s; }
+    
+    /* Cores dos Sliders */
+    #admOpen:checked + .slider { background: var(--success); }
+    #admOpen:checked + .slider:before { transform: translateX(20px); }
+
+    #admClose:checked + .slider { background: var(--danger); }
+    #admClose:checked + .slider:before { transform: translateX(20px); }
+
+    input:checked + .slider { background: var(--success); }
+    input:checked + .slider:before { transform: translateX(20px); }
+
+    .order-item-admin { 
+        background: rgba(255,255,255,0.03); 
+        padding: 12px; border-radius: 12px; margin-bottom: 10px; border: 1px solid var(--border); 
+        font-size: 13px; color: #ddd;
+    }
 
     /* Footer & Float Buttons */
     .site-footer { border-top: 1px solid var(--border); padding: 40px 20px 80px; margin-top: 60px; background: rgba(255,255,255,0.02); text-align: center; }
@@ -322,13 +353,12 @@
 </head>
 <body>
 
-  <!-- Mensagem Toast Otimizada -->
-  <div id="toast" style="position:fixed; top:100px; left:50%; transform:translateX(-50%) translateY(-20px); background:#10B981; color:#000; padding:12px 24px; border-radius:50px; font-weight:700; font-size:14px; opacity:0; pointer-events:none; transition:all 0.3s var(--ease); z-index:300; display:flex; gap:8px; box-shadow: 0 10px 20px rgba(0,0,0,0.5);"><span>✅</span> Item adicionado!</div>
+  <!-- Mensagem Toast -->
+  <div id="toast" style="position:fixed; bottom:100px; left:50%; transform:translateX(-50%); background:#10B981; color:#000; padding:12px 24px; border-radius:50px; font-weight:700; font-size:14px; opacity:0; pointer-events:none; transition:all 0.4s var(--ease); z-index:300; display:flex; gap:8px;"><span>✅</span> Item adicionado!</div>
 
   <div class="topbar">
     <div class="wrap">
-      <!-- Atalho para o Admin -->
-      <div class="brand" onclick="window.open('admin.html', '_blank')" title="Acesso Admin">
+      <div class="brand" onclick="window.openAdminLogin()" title="Acesso Admin">
         <div class="brand-icon">
           <img src="logo.jpeg" onerror="this.src='https://placehold.co/50x50/FFC107/000000?text=PF'">
         </div>
@@ -377,19 +407,18 @@
     <div class="cat-container">
       <div class="search-wrapper">
         <span class="search-icon">🔍</span>
-        <input type="text" class="search-input" id="searchInput" placeholder="O que deseja comer hoje?" oninput="window.filterMenu()">
+        <input type="text" class="search-input" id="searchInput" placeholder="O que você deseja comer hoje?" oninput="window.filterMenu()">
       </div>
       <div class="cat-scroll" id="catScroll"></div>
     </div>
 
-    <div class="grid" id="menuGrid">
-        <!-- Produtos carregados do Firebase via JS -->
-    </div>
+    <div class="grid" id="menuGrid"></div>
 
     <div class="extras-grid">
       <div class="form-box" id="extrasBox">
         <div class="form-title"><span>🍴</span> Preferências</div>
         <div id="extrasList">
+          <!-- Item preenchido para não ficar caixa vazia -->
           <label class="check-item">
             <div class="check-left"><span>🍽️</span> Enviar Talheres</div>
             <input type="checkbox" id="checkTalheres">
@@ -419,7 +448,7 @@
     </div>
   </footer>
 
-  <a href="https://api.whatsapp.com/message/7FGXL4XM42QXL1?autoload=1&app_absent=0" target="_blank" class="wa-float" aria-label="Fale connosco no WhatsApp">
+  <a href="https://api.whatsapp.com/message/7FGXL4XM42QXL1?autoload=1&app_absent=0" target="_blank" class="wa-float" aria-label="Fale conosco no WhatsApp">
     <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12.004 2c-5.514 0-10 4.486-10 10 0 1.83.496 3.567 1.373 5.09l-1.377 4.91 5.059-1.33c1.455.79 3.102 1.23 4.945 1.23 5.514 0 10-4.486 10-10s-4.486-10-10-10zm0 18.003c-1.63 0-3.125-.436-4.437-1.185l-.326-.186-2.89.76.78-2.81-.197-.332c-.84-1.423-1.33-3.08-1.33-4.85 0-4.41 3.59-8.003 8.004-8.003s8.004 3.593 8.004 8.003-3.59 8.003-8.004 8.003zm4.553-6.22c-.25-.125-1.485-.733-1.715-.817-.23-.083-.397-.125-.565.125-.168.25-.652.817-.8.984-.148.167-.298.188-.548.063-.25-.125-1.055-.39-2.01-1.24-.74-.66-1.24-1.472-1.387-1.722-.148-.25-.016-.386.11-.51.112-.112.25-.292.373-.438.125-.146.167-.25.25-.417.084-.167.042-.313-.02-.438-.063-.125-.565-1.363-.774-1.867-.203-.49-.41-.423-.565-.43-.148-.008-.317-.008-.485-.008-.168 0-.44.063-.672.313-.23.25-.882.862-.882 2.104 0 1.242.903 2.442 1.03 2.61.125.166 1.777 2.713 4.305 3.804 1.678.724 2.016.58 2.377.544.36-.037 1.148-.47 1.31-0.922.164-.452.164-.84.115-.922-.05-.084-.183-.125-.433-.25z"/></svg>
   </a>
 
@@ -471,7 +500,7 @@
         <h4 style="margin: 24px 0 16px; font-size: 14px; text-transform: uppercase; color: var(--text-sec); letter-spacing: 0.05em; border-bottom: 1px solid var(--border); padding-bottom: 8px;">Seus Dados</h4>
         
         <div class="input-group"><label>Nome Completo</label><input type="text" id="clientName" class="modal-input" placeholder="Seu nome"></div>
-        <div class="input-group"><label>Telefone</label><input type="tel" id="clientPhone" class="modal-input" placeholder="(XX) XXXXX-XXXX" maxlength="15"></div>
+        <div class="input-group"><label>Telefone</label><input type="tel" id="clientPhone" class="modal-input" placeholder="(XX) 9XXXX-XXXX" maxlength="15"></div>
         
         <div id="deliveryFields">
             <div class="input-group">
@@ -510,10 +539,75 @@
     </div>
   </div>
 
+  <!-- MODAL ADMIN -->
+  <div class="modal-overlay" id="adminModalOverlay">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 style="margin:0; color: var(--brand);">⚙️ Painel de Controle</h3>
+        <button class="close-btn" onclick="window.closeAdmin()">✕</button>
+      </div>
+      <div class="modal-body" id="adminBody">
+        <div id="adminLogin" style="text-align:center; padding:20px;">
+            <div style="font-size: 40px; margin-bottom: 10px;">🔒</div>
+            <input type="password" id="adminPass" class="modal-input" placeholder="Senha do Admin" style="text-align:center;">
+            <button class="btn btn-primary" onclick="window.checkAdmin()" style="margin-top:10px;">Entrar</button>
+        </div>
+
+        <div id="adminContent" style="display:none;">
+            <div class="admin-tabs">
+                <button class="admin-tab active" onclick="window.switchAdmin('config')">Loja</button>
+                <button class="admin-tab" onclick="window.switchAdmin('orders')">Pedidos</button>
+            </div>
+
+            <div id="adm-config" class="admin-section active">
+                <div class="admin-row">
+                    <span>Forçar Loja Aberta</span>
+                    <label class="switch"><input type="checkbox" id="admOpen"><span class="slider"></span></label>
+                </div>
+                <div class="admin-row">
+                    <span>Forçar Loja Fechada (Emergência)</span>
+                    <label class="switch"><input type="checkbox" id="admClose"><span class="slider"></span></label>
+                </div>
+                <div style="font-size:11px; color:#aaa; margin-top:-5px; margin-bottom:15px; padding:0 10px;">
+                    Se ambos desligados: Automático (09h-15h Sáb/Dom).<br>
+                    "Forçar Fechada" tem prioridade sobre tudo.
+                </div>
+                
+                <h4 style="color:#aaa; font-size:12px; margin-top:20px; text-transform:uppercase; font-weight:700;">CONFIGURAÇÃO DO PIX</h4>
+                <div class="admin-row" style="display:block;">
+                  <label style="font-size:11px; color:#aaa;">Chave Pix</label>
+                  <input type="text" id="admPixKey" class="modal-input" style="margin-bottom:5px;">
+                  
+                  <label style="font-size:11px; color:#aaa;">Nome Titular</label>
+                  <input type="text" id="admPixName" class="modal-input" style="margin-bottom:5px;">
+                  
+                  <label style="font-size:11px; color:#aaa;">Banco/Detalhes</label>
+                  <input type="text" id="admPixBank" class="modal-input">
+                </div>
+
+                <h4 style="color:#aaa; font-size:12px; margin-top:20px;">BAIRROS E TAXAS</h4>
+                <div id="admZones"></div>
+                <button class="btn btn-sec" style="padding:8px; margin-top:5px; width:auto;" onclick="window.addZone()">+ Bairro</button>
+
+                <h4 style="color:#aaa; font-size:12px; margin-top:20px;">ESTOQUE</h4>
+                <div id="admStock"></div>
+
+                <button class="btn btn-primary" style="margin-top:20px;" onclick="window.saveAdmin(event)">💾 Salvar Tudo</button>
+            </div>
+
+            <div id="adm-orders" class="admin-section">
+                <button class="btn btn-sec" onclick="window.loadOrders()" style="margin-bottom:10px;">↻ Atualizar</button>
+                <div id="ordersList"></div>
+            </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
   import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-  import { getFirestore, doc, onSnapshot, addDoc, collection, getDocs } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+  import { getFirestore, doc, onSnapshot, setDoc, addDoc, collection, getDocs, query } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
   // CONFIGURAÇÃO DO FIREBASE
   let firebaseConfig;
@@ -539,17 +633,41 @@
   const WHATSAPP = "5579988100417";
   const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyXPG30IQSfBWDxaHh_7m5Z_ZYnuFcoWNqzv-WqePbtBjSPQkh3Y5wyEgwOpcDbALkqkw/exec"; 
 
-  // MÁSCARA AUTOMÁTICA DE TELEFONE (UX Melhoarada)
-  const phoneInput = document.getElementById('clientPhone');
-  if (phoneInput) {
-      phoneInput.addEventListener('input', function (e) {
-          let x = e.target.value.replace(/\D/g, ''); // Remove tudo que não for número
-          if (x.length === 0) { e.target.value = ''; return; }
-          if (x.length <= 2) { e.target.value = '(' + x; return; }
-          if (x.length <= 7) { e.target.value = '(' + x.substring(0,2) + ') ' + x.substring(2); return; }
-          e.target.value = '(' + x.substring(0,2) + ') ' + x.substring(2,7) + '-' + x.substring(7,11);
-      });
-  }
+  const defaultZones = [
+      { name: "Albano Franco", price: 2.00 },
+      { name: "Marcos Freire 1", price: 3.00 },
+      { name: "Marcos Freire 3", price: 3.00 },
+      { name: "Taiçoca de Dentro", price: 3.00 },
+      { name: "Maria do Carmo", price: 4.00 },
+      { name: "Novo Horizonte", price: 4.00 },
+      { name: "Marcos Freire 2", price: 4.00 },
+      { name: "Piabeta", price: 5.00 },
+      { name: "João Alves", price: 5.00 },
+      { name: "Porto D'antas", price: 5.00 },
+      { name: "Neuzice Barreto", price: 5.00 },
+      { name: "Taiçoca de Fora", price: 5.00 },
+      { name: "Fernando Collor", price: 6.00 },
+      { name: "Bairro Industrial", price: 6.00 },
+      { name: "Japãozinho", price: 7.00 },
+      { name: "Lamarão", price: 7.00 },
+      { name: "Cidade Nova", price: 8.00 },
+      { name: "Sede de Socorro", price: 10.00 }
+  ];
+
+  const products = [
+    { id: 10, cat: "combos", name: "Combo 1 (Inteiro)", desc: "Batatas e Farofa", price: 45.00, img: "🍗" },
+    { id: 11, cat: "combos", name: "Combo 1 (Metade)", desc: "Batatas e Farofa", price: 25.00, img: "🍗" },
+    { id: 20, cat: "combos", name: "Combo 2 (Inteiro)", desc: "Batatas, Farofa, Arroz, Feijão Tropeiro e Vinagrete", price: 55.00, img: "🍛" },
+    { id: 21, cat: "combos", name: "Combo 2 (Metade)", desc: "Batatas, Farofa, Arroz, Feijão Tropeiro e Vinagrete", price: 32.00, img: "🍛" },
+    { id: 30, cat: "combos", name: "Combo Família", desc: "Batatas, Farofa, Arroz, Feijão Tropeiro e Vinagrete (6 Pessoas)", price: 75.00, img: "👨‍👩‍👧‍👦" },
+    { id: 5, cat: "porcoes", name: "Batata Frita (M)", desc: "Porção Média", price: 13.00, img: "🍟" },
+    { id: 51, cat: "porcoes", name: "Batata Frita (G)", desc: "Porção Grande", price: 16.00, img: "🍟" },
+    { id: 40, cat: "porcoes", name: "Arroz", desc: "Porção", price: 7.00, img: "🍚" },
+    { id: 41, cat: "porcoes", name: "Vinagrete", desc: "Porção", price: 5.00, img: "🥗" },
+    { id: 42, cat: "porcoes", name: "Feijão Tropeiro", desc: "Porção", price: 8.00, img: "🍲" },
+    { id: 7, cat: "bebidas", name: "Coca-Cola 2L", desc: "Bem gelada", price: 13.00, img: "🥤" },
+    { id: 71, cat: "bebidas", name: "Coca-Cola 1L", desc: "Bem gelada", price: 8.00, img: "🥤" }
+  ];
 
   const categories = [
     { id: "todos", label: "Todos" },
@@ -558,24 +676,18 @@
     { id: "bebidas", label: "Bebidas" }
   ];
 
-  // FALLBACK: Lista de segurança
-  const defaultZones = [
-      { name: "Albano Franco", price: 2.00 },
-      { name: "Marcos Freire 1", price: 3.00 },
-      { name: "Marcos Freire 3", price: 3.00 },
-      { name: "Taiçoca de Dentro", price: 3.00 },
-      { name: "Sede de Socorro", price: 10.00 }
-  ];
-
   let appConfig = { 
       isOpenManually: false, 
       isClosedManually: false, 
-      deliveryZones: [], 
+      deliveryZones: defaultZones, 
       hours: { galeto: { start: 9, end: 15 } }, 
-      pix: {}
+      stock: {},
+      pix: {
+          key: "79998773002",
+          name: "Gabriel Santana Morais",
+          bank: "Banco do Brasil"
+      }
   };
-  
-  let products = [];
   let cart = {}; 
   window.activeCat = 'todos';
 
@@ -588,13 +700,7 @@
     }
   };
   initAuth();
-  
-  onAuthStateChanged(auth, (u) => { 
-      if(u) {
-          subscribeToConfig(); 
-          subscribeToProducts();
-      }
-  });
+  onAuthStateChanged(auth, (u) => { if(u) subscribeToConfig(); });
 
   // --- FUNÇÕES APP CLIENTE ---
   window.deliveryMethod = 'entrega';
@@ -653,73 +759,155 @@
   };
   window.copyPix = () => { document.getElementById('pixKeyInput').select(); document.execCommand('copy'); alert("Chave Copiada!"); };
 
-  window.updateTotals = () => { renderCartModal(); };
-  window.filterMenu = () => { renderMenu(); };
+  window.updateTotals = () => {
+      renderCartModal(); 
+  };
+  
+  window.filterMenu = renderMenu;
+
+  // --- FUNÇÕES ADMIN ---
+  window.openAdminLogin = () => { 
+      const modal = document.getElementById('adminModalOverlay');
+      if (modal) modal.classList.add('open'); 
+  };
+  window.closeAdmin = () => { document.getElementById('adminModalOverlay').classList.remove('open'); };
+  window.checkAdmin = () => {
+      const pass = document.getElementById('adminPass').value.trim();
+      if(pass === "galetopaiefilho123") {
+          document.getElementById('adminLogin').style.display = 'none';
+          document.getElementById('adminContent').style.display = 'block';
+          try { renderAdmin(); window.switchAdmin('config'); } catch(e) { console.error(e); }
+      } else { alert("Senha incorreta!"); }
+  };
+  document.getElementById('adminPass').addEventListener('keypress', function (e) { if (e.key === 'Enter') window.checkAdmin(); });
+  window.switchAdmin = (tab) => {
+      document.querySelectorAll('.admin-section').forEach(e=>e.classList.remove('active'));
+      const target = document.getElementById('adm-'+tab);
+      if(target) target.classList.add('active');
+      document.querySelectorAll('.admin-tab').forEach(e=>e.classList.remove('active'));
+  };
+  window.addZone = async () => { 
+      if(!appConfig.deliveryZones) appConfig.deliveryZones=[]; 
+      appConfig.deliveryZones.push({name:"Novo Bairro", price:5}); 
+      renderAdmin(); await saveZonesOnly();
+  };
+  window.delZone = async (i) => { 
+      if(!appConfig.deliveryZones) return;
+      appConfig.deliveryZones.splice(i,1); 
+      renderAdmin(); await saveZonesOnly();
+  };
+  window.upZone = (i,f,v) => { 
+      let val = v;
+      if(f==='price') { val = parseFloat(v); if(isNaN(val)) val = 0; }
+      if(appConfig.deliveryZones[i]) appConfig.deliveryZones[i][f] = val; 
+  };
+  async function saveZonesOnly() {
+      try {
+          const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'config', 'store_settings');
+          await setDoc(docRef, { deliveryZones: appConfig.deliveryZones }, { merge: true });
+          showToast("✅ Lista de bairros atualizada!");
+      } catch(e) { console.log(e); }
+  }
+  window.saveAdmin = async (e) => {
+      let btn = e ? e.target : null;
+      if(btn) { btn.innerText = "Salvando..."; btn.disabled = true; }
+      appConfig.isOpenManually = document.getElementById('admOpen').checked;
+      appConfig.isClosedManually = document.getElementById('admClose').checked;
+      appConfig.pix = { key: document.getElementById('admPixKey').value, name: document.getElementById('admPixName').value, bank: document.getElementById('admPixBank').value };
+      products.forEach(p => { const el = document.getElementById('stk_'+p.id); if(el) appConfig.stock[p.id] = el.checked; });
+      try {
+          await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'config', 'store_settings'), appConfig);
+          if(btn) btn.innerText = "✅ Salvo!"; checkOpenStatus(); updatePixUI();
+      } catch(error) { if(btn) btn.innerText = "Erro!"; alert("Erro: " + error.message); }
+      if(btn) setTimeout(()=> { btn.innerText="💾 Salvar Tudo"; btn.disabled = false; }, 2000);
+  };
+  
+  window.loadOrders = async () => {
+      if(!auth.currentUser) return;
+      const list = document.getElementById('ordersList');
+      if(!list) return;
+      list.innerHTML = "Carregando...";
+      try {
+          const snap = await getDocs(collection(db, 'artifacts', appId, 'public', 'data', 'orders'));
+          if(snap.empty) { list.innerHTML = "Sem pedidos recentes."; return; }
+          
+          let orders = [];
+          snap.forEach(d => orders.push(d.data()));
+          
+          orders.sort((a, b) => {
+              let ta = a.timestamp?.seconds || 0;
+              let tb = b.timestamp?.seconds || 0;
+              return tb - ta; 
+          });
+          
+          orders = orders.slice(0, 15);
+          list.innerHTML = "";
+          orders.forEach(o => {
+              list.innerHTML += `<div class="order-item-admin"><strong>#${o.numero} - ${o.cliente}</strong><br>${o.detalhes}<br><span style="color:#FFC107">${o.pagamento}</span></div>`;
+          });
+      } catch(e) { 
+          console.error(e);
+          list.innerHTML = "Erro ao carregar pedidos."; 
+      }
+  };
+
+  function renderAdmin() {
+      document.getElementById('admOpen').checked = appConfig.isOpenManually || false;
+      document.getElementById('admClose').checked = appConfig.isClosedManually || false;
+      if(appConfig.pix) {
+          document.getElementById('admPixKey').value = appConfig.pix.key || "";
+          document.getElementById('admPixName').value = appConfig.pix.name || "";
+          document.getElementById('admPixBank').value = appConfig.pix.bank || "";
+      }
+      const zBox = document.getElementById('admZones');
+      const zones = Array.isArray(appConfig.deliveryZones) ? appConfig.deliveryZones : [];
+      zBox.innerHTML = zones.map((z,i) => `
+        <div class="admin-row" style="gap:10px;">
+            <button type="button" onclick="window.delZone(${i})" style="background:#EF4444; color:#fff; border:none; width:40px; height:40px; border-radius:8px; flex-shrink:0; display:flex; align-items:center; justify-content:center; font-weight:bold; font-size:18px; cursor:pointer;">🗑️</button>
+            <input type="text" value="${z.name}" onchange="window.upZone(${i},'name',this.value)" class="modal-input" style="flex:1; margin:0;">
+            <input type="number" value="${z.price}" onchange="window.upZone(${i},'price',this.value)" class="modal-input" style="width:70px; margin:0;">
+        </div>`).join('');
+      const sBox = document.getElementById('admStock');
+      sBox.innerHTML = products.map(p => `<div class="admin-row"><span style="font-size:12px;">${p.name}</span><label class="switch"><input type="checkbox" id="stk_${p.id}" ${appConfig.stock[p.id]!==false?'checked':''}><span class="slider"></span></label></div>`).join('');
+  }
 
   // --- INTERNOS ---
   function formatMoney(v) { return "R$ " + parseFloat(v||0).toFixed(2).replace('.', ','); }
-  
-  let toastTimeout;
   function showToast(msg) { 
-      const t = document.getElementById('toast'); 
-      if(msg) t.innerHTML = msg; 
-      
-      t.style.opacity = 1; 
-      t.style.transform = 'translateX(-50%) translateY(0)'; // Efeito de descida
-      
-      clearTimeout(toastTimeout);
-      toastTimeout = setTimeout(() => { 
-          t.style.opacity = 0; 
-          t.style.transform = 'translateX(-50%) translateY(-20px)';
-          setTimeout(() => { if(!msg) t.innerHTML = '<span>✅</span> Item adicionado!'; }, 300); 
-      }, 2000); 
+      const t=document.getElementById('toast'); 
+      if(msg) t.innerHTML = msg; t.style.opacity=1; 
+      setTimeout(()=> { t.style.opacity=0; setTimeout(() => t.innerHTML = '<span>✅</span> Item adicionado!', 300); }, 2000); 
   }
-
   function renderCartFloat() {
       let total = 0; 
-      for(let id in cart) {
-          const p = products.find(x => x.id === id);
-          if(p) total += (p.price * cart[id]);
-      }
+      for(let id in cart) total += (products.find(p=>p.id==id).price * cart[id]);
       document.getElementById('floatTotal').innerText = formatMoney(total);
-      
-      const cartFloat = document.getElementById('cartFloat');
-      if(total > 0) {
-          cartFloat.classList.add('show');
-      } else {
-          cartFloat.classList.remove('show');
-          window.closeCart(); // Fecha o modal caso ele esvazie totalmente por dentro do carrinho
-      }
+      document.getElementById('cartFloat').classList.toggle('show', total > 0);
   }
-  
   function renderCartModal() {
       const list = document.getElementById('cartItemsList');
       if(!list) return;
       list.innerHTML = "";
       let totalProd = 0;
       for(let id in cart) {
-          const p = products.find(x => x.id === id);
-          if(p) {
-              totalProd += p.price * cart[id];
-              list.innerHTML += `<div style="display:flex; justify-content:space-between; margin-bottom:10px; border-bottom:1px solid #222; padding-bottom:10px;"><div>${cart[id]}x ${p.name}</div><div style="font-weight:700;">${formatMoney(p.price*cart[id])}</div><div class="qty-controls"><button class="qty-btn" onclick="window.rem('${id}')">-</button><button class="qty-btn" onclick="window.add('${id}', event)">+</button></div></div>`;
-          }
+          const p = products.find(x=>x.id==id);
+          totalProd += p.price * cart[id];
+          list.innerHTML += `<div style="display:flex; justify-content:space-between; margin-bottom:10px; border-bottom:1px solid #222; padding-bottom:10px;"><div>${cart[id]}x ${p.name}</div><div style="font-weight:700;">${formatMoney(p.price*cart[id])}</div><div class="qty-controls"><button class="qty-btn" onclick="window.rem(${id})">-</button><button class="qty-btn" onclick="window.add(${id}, event)">+</button></div></div>`;
       }
       
       const sel = document.getElementById('deliverySelect');
-      let delPrice = 0;
-
       if (sel) {
-          const zones = Array.isArray(appConfig.deliveryZones) && appConfig.deliveryZones.length > 0 ? appConfig.deliveryZones : defaultZones;
+          const zones = Array.isArray(appConfig.deliveryZones) ? appConfig.deliveryZones : [];
           const currentVal = sel.value;
           
-          sel.innerHTML = zones.map((z, i) => `<option value="${i}">${z.name} (${formatMoney(z.price)})</option>`).join('');
+          sel.innerHTML = zones.map(z => `<option value="${z.price}">${z.name} (${formatMoney(z.price)})</option>`).join('');
           
           if(currentVal && currentVal !== "") sel.value = currentVal;
-
-          const selectedZone = zones[sel.value] || zones[0];
-          delPrice = window.deliveryMethod === 'retirada' ? 0 : (selectedZone ? parseFloat(selectedZone.price) : 0);
       }
       
+      const delPrice = window.deliveryMethod === 'retirada' ? 0 : parseFloat(sel?.value || 0);
+      
+      // Correção Bug Visual: Atualizando Subtotal e Adicionais (Taxa de entrega)
       document.getElementById('modalSubtotal').innerText = formatMoney(totalProd);
       document.getElementById('modalExtras').innerText = delPrice > 0 ? formatMoney(delPrice) : 'Grátis';
       document.getElementById('modalTotal').innerText = formatMoney(totalProd + delPrice);
@@ -732,7 +920,6 @@
     if (appConfig.isClosedManually) return false; if (appConfig.isOpenManually) return true;
     return isWeekend && isTime;
   }
-  
   function updatePixUI() {
       if(appConfig.pix) {
           const keyInput = document.getElementById('pixKeyInput'); if(keyInput) keyInput.value = appConfig.pix.key || "";
@@ -740,70 +927,22 @@
           const bankDisplay = document.getElementById('pixBankDisplay'); if(bankDisplay) bankDisplay.innerText = appConfig.pix.bank || "Banco";
       }
   }
-
-  // FIREBASE: ESCUTAR CONFIGURAÇÕES
   function subscribeToConfig() {
     onSnapshot(doc(db, 'artifacts', appId, 'public', 'data', 'config', 'store_settings'), (s) => {
       if (s.exists()) {
-        appConfig = { ...appConfig, ...s.data() }; 
+        const d = s.data(); appConfig = { ...appConfig, ...d }; if(d.stock) appConfig.stock = { ...appConfig.stock, ...d.stock };
         const isOpen = checkOpenStatus(); const badge = document.getElementById('statusBadge'); const txt = document.getElementById('statusText');
         if(isOpen) { badge.className='status-chip open'; txt.innerText="Aberto"; } else { badge.className='status-chip closed'; txt.innerText="Fechado"; }
-        updatePixUI();
-        if(document.getElementById('cartModal').classList.contains('open')) renderCartModal();
+        renderMenu(); updatePixUI();
+        if(document.getElementById('adminModalOverlay').classList.contains('open')) { try { renderAdmin(); } catch(e) {} }
       }
     });
   }
-
-  // FIREBASE: ESCUTAR PRODUTOS E PREVENIR BUGS DE CARRINHO FANTASMA
-  function subscribeToProducts() {
-      onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'products'), (snap) => {
-          products = [];
-          snap.forEach(doc => {
-              products.push({ id: doc.id, ...doc.data() });
-          });
-          products.sort((a,b) => (a.cat || '').localeCompare(b.cat || '') || (a.name || '').localeCompare(b.name || ''));
-          
-          // Limpeza: Se o Admin apagar um produto no Firebase, remove do carrinho de quem estiver no site
-          let cartChanged = false;
-          for(let id in cart) {
-              if(!products.find(x => x.id === id)) {
-                  delete cart[id];
-                  cartChanged = true;
-              }
-          }
-          
-          renderMenu();
-          if(cartChanged) renderCartFloat();
-          if(document.getElementById('cartModal').classList.contains('open')) renderCartModal();
-      }, (error) => {
-          console.error("Erro ao carregar cardápio:", error);
-      });
-  }
-
   function renderMenu() {
       const grid = document.getElementById('menuGrid'); if (!grid) return;
       const searchInput = document.getElementById('searchInput'); const search = searchInput ? searchInput.value.toLowerCase() : '';
-      
-      const filtered = products.filter(p => { 
-          const matchCat = p.cat === (window.activeCat || 'todos') || window.activeCat === 'todos'; 
-          return matchCat && (p.name || '').toLowerCase().includes(search); 
-      });
-      
-      grid.innerHTML = filtered.map(p => `
-        <div class="card ${p.inStock === false ? 'disabled' : ''}">
-            <div class="card-top">
-                <div class="card-thumb">${p.img || '🍗'}</div>
-                <div>
-                    <div class="card-title">${p.name}</div>
-                    <div class="card-desc">${p.desc}</div>
-                </div>
-            </div>
-            <div class="card-price-row">
-                <div class="price">${formatMoney(p.price)}</div>
-                <button class="add-btn" onclick="window.add('${p.id}', event)">+</button>
-            </div>
-        </div>
-      `).join('');
+      const filtered = products.filter(p => { const matchCat = p.cat === (window.activeCat || 'todos') || window.activeCat === 'todos'; return matchCat && p.name.toLowerCase().includes(search); });
+      grid.innerHTML = filtered.map(p => `<div class="card ${appConfig.stock[p.id] === false ? 'disabled' : ''}"><div class="card-top"><div class="card-thumb">${p.img}</div><div><div class="card-title">${p.name}</div><div class="card-desc">${p.desc}</div></div></div><div class="card-price-row"><div class="price">${formatMoney(p.price)}</div><button class="add-btn" onclick="window.add(${p.id}, event)">+</button></div></div>`).join('');
   }
 
   // --- SEND ORDER ---
@@ -818,7 +957,7 @@
           if(!isOpen) { alert("🔒 LOJA FECHADA\nEstamos fechados no momento. Horário: Sáb e Dom (09h-15h)."); return; }
           
           let btn = e ? e.target : null;
-          if(btn) { btn.innerText = "A enviar..."; btn.disabled = true; }
+          if(btn) { btn.innerText = "Enviando..."; btn.disabled = true; }
 
           const name = document.getElementById('clientName').value.trim();
           const phone = document.getElementById('clientPhone').value;
@@ -832,15 +971,13 @@
           let delText = "Retirada na Loja";
           
           if(isDelivery && deliveryEl && deliveryEl.options.length > 0 && deliveryEl.selectedIndex >= 0) {
-              const zones = Array.isArray(appConfig.deliveryZones) && appConfig.deliveryZones.length > 0 ? appConfig.deliveryZones : defaultZones;
-              const selectedZone = zones[deliveryEl.value];
-              if(selectedZone) {
-                  delPrice = parseFloat(selectedZone.price);
-                  delText = selectedZone.name;
-              }
+              delPrice = parseFloat(deliveryEl.value);
+              delText = deliveryEl.options[deliveryEl.selectedIndex].text.split('(')[0].trim();
           }
 
           let obs = document.getElementById('obsInput') ? document.getElementById('obsInput').value : '';
+          
+          // Bug Visual 3: Incluir se a pessoa pediu talheres na observação
           const querTalheres = document.getElementById('checkTalheres') && document.getElementById('checkTalheres').checked;
           if (querTalheres) {
               obs = (obs ? obs + " | " : "") + "Enviar Talheres Descartáveis";
@@ -879,7 +1016,7 @@
 
           let itemsList = ""; let totalProd = 0;
           for(let id in cart) { 
-              const p = products.find(x => x.id === id); 
+              const p = products.find(x=>x.id==id); 
               if(p) { totalProd += p.price * cart[id]; itemsList += `${cart[id]}x ${p.name}\n`; }
           }
           itemsList = itemsList.trim();
@@ -887,6 +1024,7 @@
           let payTxt = `${pay} ${formatMoney(total)}`;
           if(pay==='Dinheiro' && change) payTxt += ` (Troco: ${change})`;
 
+          // Bug Grave: Adicionado o delText (Bairro) na mensagem de Entrega do WhatsApp
           let addressStr = "";
           if (isDelivery) {
               addressStr = `${address}, ${delText} - Entrega`;
@@ -897,20 +1035,7 @@
           let msg = `PEDIDO ${orderNum}\n\n${itemsList}\n\n${addressStr}\n\n${payTxt}\n\n${name} - ${phone}`;
           if(obs) msg += `\n\nObs: ${obs}`;
 
-          const orderData = { 
-              numero: orderNum, 
-              data: new Date().toLocaleString('pt-BR'), 
-              cliente: name, 
-              telefone: phone, 
-              valor: total, 
-              pagamento: payTxt, 
-              endereco: isDelivery ? address : 'Retirada', 
-              bairro: delText, 
-              detalhes: itemsList.replace(/\n/g, ', '), 
-              entrega: delPrice,
-              status: 'pendente' // Novo status inicial
-          };
-          
+          const orderData = { numero: orderNum, data: new Date().toLocaleString(), cliente: name, telefone: phone, valor: total, pagamento: payTxt, endereco: isDelivery ? address : 'Retirada', bairro: delText, detalhes: itemsList.replace(/\n/g, ', '), entrega: delPrice };
           addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'orders'), { ...orderData, timestamp: new Date() });
           fetch(APPS_SCRIPT_URL, { method: 'POST', mode: 'no-cors', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(orderData) });
 
@@ -931,6 +1056,7 @@
   document.querySelector('.cat-container').innerHTML = categories.map(c=>`<button class="cat-btn ${c.id==='todos'?'active':''}" onclick="window.setCat('${c.id}')">${c.label}</button>`).join('');
   window.setCat = (c) => { window.activeCat = c; renderMenu(); document.querySelectorAll('.cat-btn').forEach(b => b.classList.toggle('active', b.innerText === categories.find(cat=>cat.id===c).label)); };
 
+  renderMenu();
 </script>
 </body>
 </html>
