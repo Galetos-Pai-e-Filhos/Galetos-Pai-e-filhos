@@ -407,7 +407,14 @@
     <div class="extras-grid">
       <div class="form-box" id="extrasBox">
         <div class="form-title"><span>🍴</span> Preferências</div>
-        <div id="extrasList"></div>
+        <div id="extrasList">
+          <!-- Item preenchido para não ficar caixa vazia -->
+          <label class="check-item">
+            <div class="check-left"><span>🍽️</span> Enviar Talheres</div>
+            <input type="checkbox" id="checkTalheres">
+            <div class="custom-checkbox"></div>
+          </label>
+        </div>
       </div>
       <div class="form-box">
         <div class="form-title"><span>📝</span> Observações</div>
@@ -464,8 +471,8 @@
              <span id="modalSubtotal">R$ 0,00</span>
            </div>
            <div style="display:flex; justify-content:space-between; margin-bottom:10px; color:var(--text-sec); font-size:14px;">
-             <span>Adicionais</span>
-             <span id="modalExtras">R$ 0,00</span>
+             <span>Taxa de Entrega</span>
+             <span id="modalExtras">Grátis</span>
            </div>
            
            <!-- Botões de Método de Entrega -->
@@ -805,32 +812,25 @@
       if(btn) setTimeout(()=> { btn.innerText="💾 Salvar Tudo"; btn.disabled = false; }, 2000);
   };
   
-  // FIX: Busca Segura (Sem ordenação complexa no firebase)
   window.loadOrders = async () => {
-      // Proteção garantindo que o Auth foi finalizado com sucesso
       if(!auth.currentUser) return;
-
       const list = document.getElementById('ordersList');
       if(!list) return;
       list.innerHTML = "Carregando...";
       try {
-          // Busca todos para ordenar no JS (evita erros de Index no Firebase)
           const snap = await getDocs(collection(db, 'artifacts', appId, 'public', 'data', 'orders'));
           if(snap.empty) { list.innerHTML = "Sem pedidos recentes."; return; }
           
           let orders = [];
           snap.forEach(d => orders.push(d.data()));
           
-          // Ordena no JS
           orders.sort((a, b) => {
               let ta = a.timestamp?.seconds || 0;
               let tb = b.timestamp?.seconds || 0;
               return tb - ta; 
           });
           
-          // Pega apenas os últimos 15
           orders = orders.slice(0, 15);
-          
           list.innerHTML = "";
           orders.forEach(o => {
               list.innerHTML += `<div class="order-item-admin"><strong>#${o.numero} - ${o.cliente}</strong><br>${o.detalhes}<br><span style="color:#FFC107">${o.pagamento}</span></div>`;
@@ -858,7 +858,6 @@
             <input type="number" value="${z.price}" onchange="window.upZone(${i},'price',this.value)" class="modal-input" style="width:70px; margin:0;">
         </div>`).join('');
       const sBox = document.getElementById('admStock');
-      // Correção do ID duplicado na label switch do estoque (Removido id="admStockSwitch")
       sBox.innerHTML = products.map(p => `<div class="admin-row"><span style="font-size:12px;">${p.name}</span><label class="switch"><input type="checkbox" id="stk_${p.id}" ${appConfig.stock[p.id]!==false?'checked':''}><span class="slider"></span></label></div>`).join('');
   }
 
@@ -897,6 +896,10 @@
       }
       
       const delPrice = window.deliveryMethod === 'retirada' ? 0 : parseFloat(sel?.value || 0);
+      
+      // Correção Bug Visual: Atualizando Subtotal e Adicionais (Taxa de entrega)
+      document.getElementById('modalSubtotal').innerText = formatMoney(totalProd);
+      document.getElementById('modalExtras').innerText = delPrice > 0 ? formatMoney(delPrice) : 'Grátis';
       document.getElementById('modalTotal').innerText = formatMoney(totalProd + delPrice);
   }
 
@@ -929,13 +932,11 @@
       const grid = document.getElementById('menuGrid'); if (!grid) return;
       const searchInput = document.getElementById('searchInput'); const search = searchInput ? searchInput.value.toLowerCase() : '';
       const filtered = products.filter(p => { const matchCat = p.cat === (window.activeCat || 'todos') || window.activeCat === 'todos'; return matchCat && p.name.toLowerCase().includes(search); });
-      // Correção no onclick de add(${p.id}) para window.add(${p.id})
       grid.innerHTML = filtered.map(p => `<div class="card ${appConfig.stock[p.id] === false ? 'disabled' : ''}"><div class="card-top"><div class="card-thumb">${p.img}</div><div><div class="card-title">${p.name}</div><div class="card-desc">${p.desc}</div></div></div><div class="card-price-row"><div class="price">${formatMoney(p.price)}</div><button class="add-btn" onclick="window.add(${p.id}, event)">+</button></div></div>`).join('');
   }
 
   // --- SEND ORDER ---
   window.sendOrder = async (e) => {
-      // VALIDAÇÃO 1: Carrinho Vazio
       if(Object.keys(cart).length === 0) {
           alert("O seu carrinho está vazio! Adicione algum produto antes de finalizar.");
           return;
@@ -964,9 +965,14 @@
               delText = deliveryEl.options[deliveryEl.selectedIndex].text.split('(')[0].trim();
           }
 
-          const obs = document.getElementById('obsInput') ? document.getElementById('obsInput').value : '';
+          let obs = document.getElementById('obsInput') ? document.getElementById('obsInput').value : '';
+          
+          // Bug Visual 3: Incluir se a pessoa pediu talheres na observação
+          const querTalheres = document.getElementById('checkTalheres') && document.getElementById('checkTalheres').checked;
+          if (querTalheres) {
+              obs = (obs ? obs + " | " : "") + "Enviar Talheres Descartáveis";
+          }
 
-          // VALIDAÇÕES 2: Dados do Cliente
           if(!name || name.length < 2) { 
               alert("Por favor, preencha o seu Nome Completo."); 
               if(btn) { btn.disabled=false; btn.innerText="Enviar Pedido no WhatsApp"; }
@@ -978,7 +984,6 @@
               return; 
           }
 
-          // FIX: Busca Segura Sequencial 
           let nextNum = 1;
           try {
               const snap = await getDocs(collection(db, 'artifacts', appId, 'public', 'data', 'orders'));
@@ -996,36 +1001,30 @@
               nextNum = parseInt(localStorage.getItem('orderNum') || 0, 10) + 1;
           }
           
-          localStorage.setItem('orderNum', nextNum); // fallback
-          let orderNum = String(nextNum).padStart(2, '0'); // Ex: 01, 02...
+          localStorage.setItem('orderNum', nextNum); 
+          let orderNum = String(nextNum).padStart(2, '0'); 
 
           let itemsList = ""; let totalProd = 0;
           for(let id in cart) { 
               const p = products.find(x=>x.id==id); 
               if(p) { totalProd += p.price * cart[id]; itemsList += `${cart[id]}x ${p.name}\n`; }
           }
+          itemsList = itemsList.trim();
           const total = totalProd + delPrice;
           let payTxt = `${pay} ${formatMoney(total)}`;
           if(pay==='Dinheiro' && change) payTxt += ` (Troco: ${change})`;
 
-          // STRING DE ENDEREÇO CONDICIONAL
+          // Bug Grave: Adicionado o delText (Bairro) na mensagem de Entrega do WhatsApp
           let addressStr = "";
           if (isDelivery) {
-              addressStr = `${address} ${delText} - Entrega`;
+              addressStr = `${address}, ${delText} - Entrega`;
           } else {
-              // Permite mostrar o endereço caso o cliente tenha preenchido mesmo em retirada
-              addressStr = address ? `${address} ${delText} - Retirada` : `Retirada`;
+              addressStr = address ? `${address} - Retirada` : `Retirada`;
           }
 
-          let msg = `PEDIDO ${orderNum}\n\n${itemsList}\n${addressStr}\n\n${payTxt}\n\n${name} - ${phone}`;
+          let msg = `PEDIDO ${orderNum}\n\n${itemsList}\n\n${addressStr}\n\n${payTxt}\n\n${name} - ${phone}`;
           if(obs) msg += `\n\nObs: ${obs}`;
 
-          // Enviar dados do PIX de forma mais limpa se for o caso
-          if (pay === 'Pix' && appConfig.pix) {
-              msg += `\n\nChave PIX: ${appConfig.pix.key}`;
-          }
-
-          // Salvar Dados
           const orderData = { numero: orderNum, data: new Date().toLocaleString(), cliente: name, telefone: phone, valor: total, pagamento: payTxt, endereco: isDelivery ? address : 'Retirada', bairro: delText, detalhes: itemsList.replace(/\n/g, ', '), entrega: delPrice };
           addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'orders'), { ...orderData, timestamp: new Date() });
           fetch(APPS_SCRIPT_URL, { method: 'POST', mode: 'no-cors', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(orderData) });
@@ -1034,10 +1033,9 @@
               if(btn) { btn.innerText = "Enviar Pedido no WhatsApp"; btn.disabled = false; }
               window.closeModal(); cart={}; renderCartFloat(); 
               
-              // Redirecionamento (Mais seguro contra bloqueios de pop-up se feito diretamente no timeout do clique)
               const waLink = `https://wa.me/${WHATSAPP}?text=${encodeURIComponent(msg)}`;
               window.location.href = waLink;
-          }, 800);
+          }, 100);
 
       } catch (err) {
           console.error(err); alert("Erro ao enviar. Tente novamente.");
