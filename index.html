@@ -1564,7 +1564,24 @@
       if (pixGroup) pixGroup.style.display = method === 'Pix' ? 'block' : 'none';
     };
     window.copyPix = () => { document.getElementById('pixKeyInput').select(); document.execCommand('copy'); alert("Chave Copiada!"); };
-    window.updateTotals = () => renderCartModal();
+    window.updateTotals = () => {
+      let totalProd = 0;
+      for (let id in cart) {
+        totalProd += products.find(x => x.id == id).price * cart[id];
+      }
+
+      const sel = document.getElementById('deliverySelect');
+      const zones = Array.isArray(appConfig.deliveryZones) ? appConfig.deliveryZones : [];
+      let delPrice = 0;
+      if (sel && sel.value) {
+        const selectedZone = zones.find(z => z.name === sel.value);
+        delPrice = selectedZone ? parseFloat(selectedZone.price) || 0 : 0;
+      }
+
+      document.getElementById('modalSubtotal').innerText = formatMoney(totalProd);
+      // document.getElementById('modalExtras').innerText = ... (Se houver extras)
+      document.getElementById('modalTotal').innerText = formatMoney(totalProd + delPrice);
+    };
     window.filterMenu = renderMenu;
 
     // --- FUNÇÕES ADMIN ---
@@ -1749,12 +1766,18 @@
       const sel = document.getElementById('deliverySelect');
       const zones = Array.isArray(appConfig.deliveryZones) ? appConfig.deliveryZones : [];
 
-      const currentVal = sel.value; // Now stores the neighborhood NAME
+      const currentVal = sel.value; // Stores current selection
       sel.innerHTML = zones.map(z => `<option value="${z.name}">${z.name} (${formatMoney(z.price)})</option>`).join('');
-      if (currentVal) sel.value = currentVal;
+      if (currentVal && zones.find(z => z.name === currentVal)) {
+        sel.value = currentVal;
+      } else if (zones.length > 0) {
+        sel.value = zones[0].name;
+      }
 
       const selectedZone = zones.find(z => z.name === sel.value);
-      const delPrice = selectedZone ? selectedZone.price : 0;
+      const delPrice = selectedZone ? parseFloat(selectedZone.price) || 0 : 0;
+
+      document.getElementById('modalSubtotal').innerText = formatMoney(totalProd);
       document.getElementById('modalTotal').innerText = formatMoney(totalProd + delPrice);
     }
 
@@ -1857,7 +1880,7 @@
           delText = deliveryEl.value;
           const zones = Array.isArray(appConfig.deliveryZones) ? appConfig.deliveryZones : [];
           const selectedZone = zones.find(z => z.name === delText);
-          delPrice = selectedZone ? selectedZone.price : 0;
+          delPrice = selectedZone ? parseFloat(selectedZone.price) || 0 : 0;
         }
 
         const obs = document.getElementById('obsInput') ? document.getElementById('obsInput').value : '';
