@@ -1,0 +1,17 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Caminho das configurações (estoque, bairros, pix, etc)
+    match /artifacts/galeteria-pais-filhos/public/data/config/{document=**} {
+      allow read, write: if true;
+    }
+    
+    // Caminho dos pedidos (enviados pelos clientes)
+    match /artifacts/galeteria-pais-filhos/public/data/orders/{document=**} {
+      allow create: if true;
+      allow read: if true; // Para que o admin possa listar no painel
+    }
+    
+  }
+}
