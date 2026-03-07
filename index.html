@@ -1371,6 +1371,7 @@
         <div id="adminContent" style="display:none;">
           <div class="admin-tabs">
             <button class="admin-tab active" onclick="switchAdmin('config')">Loja</button>
+            <button class="admin-tab" onclick="switchAdmin('products')">Produtos</button>
             <button class="admin-tab" onclick="switchAdmin('orders')">Pedidos</button>
           </div>
 
@@ -1411,6 +1412,14 @@
             <div id="admStock"></div>
 
             <button class="btn btn-primary" style="margin-top:20px;" onclick="saveAdmin(event)">💾 Salvar Tudo</button>
+          </div>
+
+          <!-- Tab Produtos -->
+          <div id="adm-products" class="admin-section">
+            <h4 style="color:#aaa; font-size:12px; margin-top:10px; text-transform:uppercase;">GERENCIAR PRODUTOS</h4>
+            <div id="admProductsList"></div>
+            <button class="btn btn-sec" style="margin-top:15px; width:100%; border:1px dashed var(--brand); color:var(--brand);" onclick="window.addProd()">+ Adicionar Novo Produto</button>
+            <button class="btn btn-primary" style="margin-top:20px;" onclick="saveAdmin(event)">💾 Salvar Alterações</button>
           </div>
 
           <!-- Tab Pedidos -->
@@ -1475,7 +1484,7 @@
       { name: "Sede de Socorro", price: 10.00 }
     ];
 
-    const products = [
+    const defaultProducts = [
       { id: 10, cat: "combos", name: "Combo 1 (Inteiro)", desc: "Batatas e Farofa", price: 45.00, img: "🍗" },
       { id: 11, cat: "combos", name: "Combo 1 (Metade)", desc: "Batatas e Farofa", price: 25.00, img: "🍗" },
       { id: 20, cat: "combos", name: "Combo 2 (Inteiro)", desc: "Batatas, Farofa, Arroz, Feijão Tropeiro e Vinagrete", price: 55.00, img: "🍛" },
@@ -1489,6 +1498,7 @@
       { id: 7, cat: "bebidas", name: "Coca-Cola 2L", desc: "Bem gelada", price: 13.00, img: "🥤" },
       { id: 71, cat: "bebidas", name: "Coca-Cola 1L", desc: "Bem gelada", price: 8.00, img: "🥤" }
     ];
+    let allProducts = [...defaultProducts];
 
     const categories = [
       { id: "todos", label: "Todos" },
@@ -1615,8 +1625,9 @@
       const target = document.getElementById('adm-' + tab);
       if (target) target.classList.add('active');
 
-      document.querySelectorAll('.admin-tab').forEach(e => e.classList.remove('active'));
-      // Find the button that called this, if available, or just set visually
+      document.querySelectorAll('.admin-tab').forEach(e => {
+        e.classList.toggle('active', e.getAttribute('onclick').includes(`'${tab}'`));
+      });
     };
 
     window.addZone = async () => {
@@ -1663,7 +1674,9 @@
         bank: document.getElementById('admPixBank').value
       };
 
-      products.forEach(p => {
+      appConfig.products = allProducts;
+
+      allProducts.forEach(p => {
         const el = document.getElementById('stk_' + p.id);
         if (el) appConfig.stock[p.id] = el.checked;
       });
@@ -1718,11 +1731,58 @@
         </div>`).join('');
 
       const sBox = document.getElementById('admStock');
-      sBox.innerHTML = products.map(p => `
+      sBox.innerHTML = allProducts.map(p => `
         <div class="admin-row">
             <span style="font-size:12px;">${p.name}</span>
-            <label class="switch"><input type="checkbox" id="stk_${p.id}" ${appConfig.stock[p.id] !== false ? 'checked' : ''} id="admStockSwitch"><span class="slider"></span></label>
+            <label class="switch"><input type="checkbox" id="stk_${p.id}" ${appConfig.stock[p.id] !== false ? 'checked' : ''}><span class="slider"></span></label>
         </div>`).join('');
+
+      renderAdminProducts();
+    }
+
+    window.addProd = () => {
+      const newId = Date.now();
+      allProducts.push({ id: newId, cat: "combos", name: "Novo Produto", desc: "Descrição aqui", price: 0, img: "🍗" });
+      renderAdminProducts();
+    };
+
+    window.delProd = (idx) => {
+      if (confirm("Excluir este produto?")) {
+        allProducts.splice(idx, 1);
+        renderAdminProducts();
+      }
+    };
+
+    window.upProd = (idx, field, val) => {
+      if (field === 'price') val = parseFloat(val) || 0;
+      allProducts[idx][field] = val;
+    };
+
+    function renderAdminProducts() {
+      const list = document.getElementById('admProductsList');
+      if (!list) return;
+      list.innerHTML = allProducts.map((p, i) => `
+        <div style="background: rgba(255,255,255,0.03); border: 1px solid var(--border); border-radius: 12px; padding: 12px; margin-bottom: 12px;">
+          <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
+            <input type="text" value="${p.img}" onchange="window.upProd(${i},'img',this.value)" class="modal-input" style="width:45px; text-align:center; padding:5px; margin:0;" placeholder="🖼️">
+            <input type="text" value="${p.name}" onchange="window.upProd(${i},'name',this.value)" class="modal-input" style="flex:1; margin:0 8px;" placeholder="Nome">
+            <button onclick="window.delProd(${i})" style="background:rgba(239,68,68,0.2); color:var(--danger); border:1px solid rgba(239,68,68,0.3); border-radius:8px; padding:0 10px; cursor:pointer;">✕</button>
+          </div>
+          <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px; margin-bottom:8px;">
+            <div class="input-group" style="margin:0;">
+              <label>Preço</label>
+              <input type="number" step="0.5" value="${p.price}" onchange="window.upProd(${i},'price',this.value)" class="modal-input">
+            </div>
+            <div class="input-group" style="margin:0;">
+              <label>Categoria</label>
+              <select onchange="window.upProd(${i},'cat',this.value)" class="modal-input">
+                ${categories.map(c => c.id === 'todos' ? '' : `<option value="${c.id}" ${p.cat === c.id ? 'selected' : ''}>${c.label}</option>`).join('')}
+              </select>
+            </div>
+          </div>
+          <textarea onchange="window.upProd(${i},'desc',this.value)" class="modal-input" style="min-height:60px; font-size:12px;" placeholder="Descrição">${p.desc}</textarea>
+        </div>
+      `).join('');
     }
 
     // --- INTERNOS ---
@@ -1814,6 +1874,7 @@
           const d = s.data();
           appConfig = { ...appConfig, ...d };
           if (d.stock) appConfig.stock = { ...appConfig.stock, ...d.stock };
+          if (Array.isArray(d.products)) allProducts = d.products;
 
           const isOpen = checkOpenStatus();
           const badge = document.getElementById('statusBadge');
@@ -1839,7 +1900,7 @@
       const searchInput = document.getElementById('searchInput');
       const search = searchInput ? searchInput.value.toLowerCase() : '';
 
-      const filtered = products.filter(p => {
+      const filtered = allProducts.filter(p => {
         const matchCat = p.cat === (window.activeCat || 'todos') || window.activeCat === 'todos';
         const matchSearch = p.name.toLowerCase().includes(search);
         return matchCat && matchSearch;
@@ -1898,7 +1959,7 @@
 
         let itemsList = ""; let totalProd = 0;
         for (let id in cart) {
-          const p = products.find(x => x.id == id);
+          const p = allProducts.find(x => x.id == id);
           if (p) {
             totalProd += p.price * cart[id];
             itemsList += `${cart[id]}x ${p.name}\n`;
